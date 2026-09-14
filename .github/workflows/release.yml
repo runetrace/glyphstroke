@@ -1,0 +1,80 @@
+# Сборка выпуска на трёх системах и публикация релиза.
+#
+# Запускается, когда вы помечаете версию тегом вида v0.7.0 и отправляете его:
+#     git tag v0.7.0 && git push origin v0.7.0
+# После этого гитхаб сам собирает .deb (Linux), .dmg (macOS) и установщик .exe
+# (Windows) на своих машинах и прикладывает их к релизу с этим тегом.
+#
+# Запустить руками тоже можно — вкладка Actions, кнопка «Run workflow».
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write        # нужно, чтобы создать релиз и загрузить файлы
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Собрать .deb
+        run: bash linux/packaging/build-deb.sh "${{ github.workspace }}/out"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: out/*.deb
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Проверки ядра
+        run: swift test
+        working-directory: macos
+      - name: Собрать .app и .dmg
+        # Без сертификата разработчика: подпись «ad hoc», для раздачи её мало,
+        # но собрать и запустить на своей машине даёт. Настоящую подпись
+        # включим, когда появится учётная запись Apple (переменная SIGN_ID).
+        run: bash macos/scripts/make-dmg.sh "${{ github.workspace }}/out"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: out/*.dmg
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Поставить Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Собрать программу и установщик
+        shell: pwsh
+        run: pwsh -ExecutionPolicy Bypass -File packaging/build.ps1
+        working-directory: windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: windows/dist/*setup.exe
+
+  release:
+    needs: [linux, macos, windows]
+    runs-on: ubuntu-latest
+    # Только для тега: ручной прогон собирает артефакты, но релиз не создаёт.
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Опубликовать релиз
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**/*
+          generate_release_notes: true

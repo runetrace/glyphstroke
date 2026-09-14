@@ -1,0 +1,18 @@
+[Unit]
+Description=Glyphstroke для Linux — жесты мыши
+PartOf=graphical-session.target
+After=graphical-session.target
+# На свежем входе мышь и права на /dev/input бывают готовы не сразу. Без снятия
+# лимита пяти-шести быстрых падений хватало, чтобы systemd бросил попытки и
+# служба осталась мёртвой; так — перезапускается, пока устройство не появится.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=@EXEC@
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

@@ -1,0 +1,10 @@
+name: Close tab
+enabled: true
+description: Stroke down
+event: ''
+directions: [D]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: cmd+w}
+templates: []

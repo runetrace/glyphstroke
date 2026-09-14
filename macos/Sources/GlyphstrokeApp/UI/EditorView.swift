@@ -1,0 +1,305 @@
+import SwiftUI
+import GlyphstrokeCore
+
+
+/// Редактор жестов: слева список, справа подробности.
+///
+/// Правки сохраняются сами, через полсекунды после последнего нажатия клавиши.
+/// Кнопки «Сохранить» здесь нет намеренно: жест — это не документ, человек
+/// приходит сюда поменять одну строчку, и забытая кнопка означала бы потерянную
+/// правку и полчаса разбирательств, почему мышь делает старое.
+struct EditorView: View {
+    @ObservedObject var model: AppModel
+
+    var body: some View {
+        NavigationSplitView {
+            List(selection: $model.selectedID) {
+                ForEach(model.gestures) { gesture in
+                    GestureRow(gesture: gesture)
+                        .tag(gesture.id)
+                        .contextMenu {
+                            Button(tr("Дублировать")) { model.duplicate(gesture) }
+                            Button(tr("Удалить"), role: .destructive) { model.delete(gesture) }
+                        }
+                }
+            }
+            .frame(minWidth: 240)
+            .safeAreaInset(edge: .bottom) {
+                HStack {
+                    Button {
+                        model.addGesture()
+                    } label: {
+                        Label(tr("Добавить"), systemImage: "plus")
+                    }
+                    Spacer()
+                    Button {
+                        if let selected = model.selected { model.delete(selected) }
+                    } label: {
+                        Label(tr("Удалить"), systemImage: "minus")
+                    }
+                    .disabled(model.selected == nil)
+                }
+                .buttonStyle(.borderless)
+                .padding(8)
+            }
+        } detail: {
+            if let gesture = model.selected {
+                GestureDetailView(model: model, gesture: gesture)
+                    .id(gesture.id)
+            } else {
+                ContentUnavailableLikeView()
+            }
+        }
+        .navigationTitle(tr("Жесты"))
+        .safeAreaInset(edge: .top) {
+            if let problem = model.problem {
+                Text(problem)
+                    .font(.callout)
+                    .foregroundStyle(.white)
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.red.opacity(0.85))
+            }
+        }
+    }
+}
+
+/// Строка списка: имя, фигура и пометка «выключен».
+private struct GestureRow: View {
+    let gesture: Gesture
+
+    var body: some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(gesture.name)
+                    .foregroundStyle(gesture.enabled ? .primary : .secondary)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            if !gesture.enabled {
+                Text(tr("выкл"))
+                    .font(.caption2)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.secondary.opacity(0.2), in: Capsule())
+            }
+        }
+        .padding(.vertical, 2)
+    }
+
+    private var subtitle: String {
+        var parts: [String] = []
+        if !gesture.directions.isEmpty { parts.append(gesture.directions.joined(separator: ", ")) }
+        if !gesture.templates.isEmpty { parts.append("\(tr("образцов:")) \(gesture.templates.count)") }
+        if !gesture.event.isEmpty { parts.append(gesture.event) }
+        if !gesture.apps.isEmpty { parts.append("\(tr("только:")) \(gesture.apps.joined(separator: ", "))") }
+        return parts.isEmpty ? tr("фигура не задана") : parts.joined(separator: " · ")
+    }
+}
+
+/// Заглушка пустого выбора. Своя, а не ContentUnavailableView: тот появился
+/// только в macOS 14, а программа работает начиная с 13-й.
+private struct ContentUnavailableLikeView: View {
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "scribble.variable")
+                .font(.system(size: 40))
+                .foregroundStyle(.secondary)
+            Text(tr("Выберите жест слева или добавьте новый"))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// Подробности одного жеста.
+struct GestureDetailView: View {
+    @ObservedObject var model: AppModel
+    @State private var draft: Gesture
+    @State private var saveTask: Task<Void, Never>?
+    @State private var directionsText: String
+    @State private var appsText: String
+
+    init(model: AppModel, gesture: Gesture) {
+        self.model = model
+        _draft = State(initialValue: gesture)
+        _directionsText = State(initialValue: gesture.directions.joined(separator: ", "))
+        _appsText = State(initialValue: gesture.apps.joined(separator: "\n"))
+    }
+
+    var body: some View {
+        Form {
+            Section(tr("Жест")) {
+                TextField(tr("Название"), text: $draft.name)
+                TextField(tr("Описание"), text: $draft.describedAs, axis: .vertical)
+                    .lineLimit(1...4)
+                Toggle(tr("Включён"), isOn: $draft.enabled)
+            }
+
+            Section(tr("Фигура")) {
+                TextField(tr("Направления"), text: $directionsText, prompt: Text(tr("например: D-R")))
+                Text(tr("Буквы направлений через дефис: R вправо, L влево, U вверх, D вниз, ")
+                     + tr("DR вниз-вправо и так далее. Несколько вариантов — через запятую."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                StrokeCanvas(templates: $draft.templates)
+
+                if let warning = conflictWarning {
+                    Label(warning, systemImage: "exclamationmark.triangle")
+                        .foregroundStyle(.orange)
+                        .font(.callout)
+                }
+            }
+
+            Section(tr("Действия")) {
+                ActionsEditor(actions: $draft.actions)
+            }
+
+            Section(tr("Где работает")) {
+                TextField(tr("Программы"), text: $appsText, axis: .vertical)
+                    .lineLimit(2...6)
+                Text(tr("Пусто — жест работает везде. По строке на программу: ")
+                     + tr("«class:com.apple.Safari» — точное совпадение, иначе строка понимается ")
+                     + tr("как выражение и ищется в «программа | заголовок окна». Имя программы ")
+                     + tr("видно в журнале, когда жест срабатывает."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section(tr("Тонкости")) {
+                HStack {
+                    Text(tr("Допуск поворота"))
+                    Spacer()
+                    Text("\(Int(draft.rotationTolerance))°")
+                        .foregroundStyle(.secondary)
+                }
+                Slider(value: $draft.rotationTolerance, in: 0...45, step: 1)
+                Text(tr("Насколько криво можно рисовать. Больше 45° делать не стоит: ")
+                     + tr("жест начнёт путаться со своим же поворотом."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .onChange(of: draft) { _ in scheduleSave() }
+        .onChange(of: directionsText) { text in
+            draft.directions = text
+                .split(whereSeparator: { $0 == "," || $0 == " " })
+                .map { $0.trimmingCharacters(in: .whitespaces).uppercased() }
+                .filter { !$0.isEmpty }
+        }
+        .onChange(of: appsText) { text in
+            draft.apps = text.split(separator: "\n")
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty }
+        }
+    }
+
+    /// Сохранение с задержкой: пока человек печатает название, файл трогать не
+    /// надо — иначе на каждую букву уходила бы запись на диск.
+    private func scheduleSave() {
+        saveTask?.cancel()
+        let snapshot = draft
+        saveTask = Task {
+            try? await Task.sleep(nanoseconds: 600_000_000)
+            if Task.isCancelled { return }
+            model.update(snapshot)
+        }
+    }
+
+    private var conflictWarning: String? {
+        let mine = Set(draft.directions)
+        guard !mine.isEmpty else { return nil }
+        let clashing = model.gestures
+            .filter { $0.enabled && $0.id != draft.id && !Set($0.directions).isDisjoint(with: mine) }
+            .map(\.name)
+        guard !clashing.isEmpty else { return nil }
+        return "\(tr("Та же фигура у:")) \(clashing.joined(separator: ", ")). "
+            + tr("Пока фигуры совпадают, не сработает ни один из жестов.")
+    }
+}
+
+/// Список действий жеста.
+struct ActionsEditor: View {
+    @Binding var actions: [Action]
+
+    private let types: [(value: String, title: String)] = [
+        ("standard", tr("Стандартное действие")),
+        ("keys", tr("Клавиши")),
+        ("text", tr("Текст")),
+        ("command", tr("Команда")),
+        ("app", tr("Программа")),
+        ("window", tr("Окно")),
+        ("button", tr("Щелчок")),
+        ("scroll", tr("Прокрутка")),
+        ("delay", tr("Пауза, мс")),
+        ("none", tr("Ничего")),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(actions.indices, id: \.self) { index in
+                HStack(spacing: 8) {
+                    Picker("", selection: $actions[index].type) {
+                        ForEach(types, id: \.value) { type in
+                            Text(type.title).tag(type.value)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 130)
+
+                    if actions[index].type == "standard" {
+                        // У стандартного действия значение выбирается из списка:
+                        // помнить, что «вставить» — это ⌘V, человек не обязан,
+                        // а такой жест ещё и переносится на другую систему.
+                        Picker("", selection: $actions[index].value) {
+                            ForEach(StandardActions.all, id: \.id) { entry in
+                                Text(StandardActions.describe(entry.id)).tag(entry.id)
+                            }
+                        }
+                        .labelsHidden()
+                    } else {
+                        TextField(hint(for: actions[index].type), text: $actions[index].value)
+                    }
+
+                    Button {
+                        actions.remove(at: index)
+                    } label: {
+                        Image(systemName: "minus.circle")
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+
+            Button {
+                actions.append(Action(type: "standard", value: "copy"))
+            } label: {
+                Label(tr("Добавить действие"), systemImage: "plus")
+            }
+            .buttonStyle(.borderless)
+
+            Text(tr("Стандартное действие выбирается из списка и переносится между ")
+                 + tr("системами как есть. Клавиши пишутся через плюс: cmd+shift+t, ")
+                 + tr("ctrl+Left, F5. Действия выполняются по порядку сверху вниз."))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func hint(for type: String) -> String {
+        switch type {
+        case "keys": return tr("cmd+t")
+        case "text": return tr("текст, который напечатать")
+        case "command": return tr("команда оболочки")
+        case "app": return tr("Safari или com.apple.Safari")
+        case "window": return tr("minimize, close, fullscreen, activate")
+        case "button": return tr("left, right, middle")
+        case "scroll": return tr("up 3")
+        case "delay": return tr("200")
+        default: return ""
+        }
+    }
+}

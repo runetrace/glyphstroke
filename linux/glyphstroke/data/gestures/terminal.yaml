@@ -1,0 +1,9 @@
+name: Терминал
+enabled: true
+description: Уголок вниз-влево — открыть терминал
+directions: [D-L]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: command, value: x-terminal-emulator || gnome-terminal || konsole || xterm}
+templates: []

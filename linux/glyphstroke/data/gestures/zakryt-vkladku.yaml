@@ -1,0 +1,9 @@
+name: Закрыть вкладку
+enabled: true
+description: Росчерк вниз
+directions: [D]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: ctrl+w}
+templates: []

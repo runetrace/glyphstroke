@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- WinForms нужен ради значка в области уведомлений: в WPF своего нет. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>Glyphstroke</AssemblyName>
+    <RootNamespace>Glyphstroke.App</RootNamespace>
+    <ApplicationIcon>glyphstroke.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>1.0.0</Version>
+    <Product>Glyphstroke</Product>
+    <Company>runetrace</Company>
+    <Description>Управление устройством жестами</Description>
+    <!-- Своей разметки XAML в проекте нет: окна собраны кодом, см. EditorWindow. -->
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- Проект использует и WPF, и WinForms (WinForms нужен только ради значка
+       в трее). Из-за этого одинаковые имена (TextBox, Color, Point, Rectangle)
+       становятся неоднозначными во всех файлах. Убираем глобальные using
+       WinForms и System.Drawing: там, где они действительно нужны (TrayApp),
+       они подключены явно. -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Glyphstroke.Core\Glyphstroke.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="glyphstroke.ico" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="gestures\*.yaml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

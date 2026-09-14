@@ -1,0 +1,7 @@
+name: Вперёд (rocker)
+enabled: false
+description: Удерживая левую кнопку, щёлкнуть правой — «вперёд».
+event: rocker-right
+apps: []
+actions:
+  - {type: keys, value: alt+Right}

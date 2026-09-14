@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Glyphstroke — mouse gestures
+Name[ru]=Glyphstroke — жесты мыши
+Comment=Control the computer with gestures
+Comment[ru]=Управление устройством жестами
+Exec=glyphstroke gui
+Icon=glyphstroke
+Terminal=false
+Categories=Settings;DesktopSettings;Utility;
+Keywords=mouse;gestures;strokes;мышь;жесты;glyphstroke;

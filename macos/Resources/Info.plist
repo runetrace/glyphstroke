@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>Glyphstroke</string>
+    <key>CFBundleDisplayName</key>
+    <string>Glyphstroke</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.runetrace.glyphstroke</string>
+    <key>CFBundleExecutable</key>
+    <string>GlyphstrokeApp</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleIconFile</key>
+    <string>Glyphstroke</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+
+    <!-- Программа живёт в строке меню: значка в Dock и меню приложения у неё нет. -->
+    <key>LSUIElement</key>
+    <true/>
+
+    <!-- Тексты, которые система покажет, когда будет спрашивать разрешения.
+         Без них в окне запроса стоит пустая строка, и человек не понимает,
+         зачем программе мышь. -->
+    <key>NSInputMonitoringUsageDescription</key>
+    <string>Glyphstroke следит за движением мыши, чтобы распознавать жесты.</string>
+    <key>NSAccessibilityUsageDescription</key>
+    <string>Glyphstroke выполняет действия жеста: нажимает клавиши и работает с окнами.</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>Glyphstroke запускает программы по жесту.</string>
+
+    <key>NSHumanReadableCopyright</key>
+    <string>PolyForm Noncommercial 1.0.0</string>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+    <key>NSSupportsAutomaticTermination</key>
+    <false/>
+    <key>NSSupportsSuddenTermination</key>
+    <false/>
+</dict>
+</plist>

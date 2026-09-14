@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <!-- Ядро не знает ни про Windows, ни про графику: его проверки гоняются
+         где угодно, в том числе на сборочной машине с Linux. -->
+    <RootNamespace>Glyphstroke.Core</RootNamespace>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Файлы жестов общие с версиями для Linux и macOS, поэтому нужен
+         настоящий YAML, а не самодельный разбор: там есть и блочные строки,
+         и потоковые карты. Подойдёт любая версия 13 и новее. -->
+    <PackageReference Include="YamlDotNet" Version="15.1.2" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,35 @@
+# Python (Linux)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Swift (macOS)
+.build/
+.swiftpm/
+macos/dist/
+
+# .NET (Windows)
+bin/
+obj/
+windows/dist/
+
+# сборки и мусор
+build/
+dist/
+.DS_Store
+*.user
+
+# служебное
+.claude/
+
+# секреты — в репозиторий не класть
+token.txt
+boosty.txt
+*.token
+
+# черновики иконок — только локально
+linux/docs/icon-drafts/
+
+# эталонные скриншоты для сверки вида — только локально
+design/

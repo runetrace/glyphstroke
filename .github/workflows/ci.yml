@@ -1,0 +1,53 @@
+# Проверки при каждом изменении: собирается ли и проходят ли тесты.
+#
+# Отдельно от release.yml: этот гоняется на каждый push и pull request, чтобы
+# поломка была видна сразу, а не в момент выпуска. Артефактов не делает.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Зависимости
+        # Ставим системными пакетами, а не через pip: тестам нужен GTK (модуль
+        # gi), который иначе не поставить. Системный python3 на ubuntu — 3.12.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-evdev python3-yaml python3-gi             gir1.2-gtk-3.0 python3-gi-cairo python3-pytest xvfb dpkg-dev
+      - name: Тесты ядра
+        # xvfb даёт виртуальный экран для оконных тестов. Тесты, которым нужен
+        # /dev/uinput, на CI сами отмечаются пропущенными — это ожидаемо.
+        run: xvfb-run -a python3 -m pytest -q
+        working-directory: linux
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Сборка (включая приложение)
+        run: swift build
+        working-directory: macos
+      - name: Тесты ядра
+        run: swift test
+        working-directory: macos
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Сборка приложения
+        run: dotnet build src/Glyphstroke.App/Glyphstroke.App.csproj -c Release --nologo
+        working-directory: windows
+      - name: Тесты ядра
+        run: dotnet test tests/Glyphstroke.Core.Tests/Glyphstroke.Core.Tests.csproj -c Release --nologo
+        working-directory: windows

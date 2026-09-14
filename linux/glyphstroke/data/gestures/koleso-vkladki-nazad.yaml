@@ -1,0 +1,7 @@
+name: Предыдущая вкладка (колесо)
+enabled: false
+description: Колесо вверх при зажатой правой кнопке.
+event: wheel-up
+apps: []
+actions:
+  - {type: keys, value: ctrl+Page_Up}

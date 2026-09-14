@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "glyphstroke-linux"
+version = "1.0.0"
+description = "Управление устройством жестами"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "PolyForm-Noncommercial-1.0.0"}
+authors = [{name = "runetrace", email = "runetrace@proton.me"}]
+keywords = ["gestures", "mouse", "wayland", "x11", "evdev", "жесты"]
+dependencies = ["evdev>=1.6", "PyYAML>=5.4"]
+
+[project.urls]
+"Сообщить об ошибке" = "mailto:runetrace@proton.me"
+
+[project.optional-dependencies]
+gui = ["PyGObject>=3.42"]
+test = ["pytest>=7"]
+
+[project.scripts]
+glyphstroke = "glyphstroke.cli:main"
+glyphstroked = "glyphstroke.daemon:main"
+
+[tool.setuptools]
+packages = ["glyphstroke"]
+
+[tool.setuptools.package-data]
+glyphstroke = ["data/*", "data/gestures/*.yaml", "data/icons/*.svg",
+            "data/icons/*/*.png"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]

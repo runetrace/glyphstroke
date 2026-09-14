@@ -1,0 +1,9 @@
+name: Закрыть окно
+enabled: true
+description: Уголок вниз-вправо, как в StrokeIt
+directions: [D-R]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: alt+F4}
+templates: []

@@ -1,0 +1,9 @@
+name: Вперёд
+enabled: true
+description: Росчерк вправо — «вперёд»
+directions: [R]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: alt+Right}
+templates: []

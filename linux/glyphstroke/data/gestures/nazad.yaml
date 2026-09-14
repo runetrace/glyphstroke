@@ -1,0 +1,9 @@
+name: Назад
+enabled: true
+description: Росчерк влево — «назад» в браузере и файловом менеджере
+directions: [L]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: alt+Left}
+templates: []

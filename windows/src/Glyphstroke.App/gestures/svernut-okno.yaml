@@ -1,0 +1,10 @@
+name: Minimise the window
+enabled: true
+description: Stroke left-down
+event: ""
+directions: [L-D]
+apps: []
+rotation_tolerance: 20
+actions:
+  - {type: "standard", value: "minimize"}
+templates: []

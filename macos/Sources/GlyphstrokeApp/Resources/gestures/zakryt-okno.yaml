@@ -1,0 +1,10 @@
+name: Close the window
+enabled: true
+description: Stroke down-right
+event: ''
+directions: [D-R]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: cmd+w}
+templates: []

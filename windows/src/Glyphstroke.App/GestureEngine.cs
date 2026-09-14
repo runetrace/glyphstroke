@@ -1,0 +1,201 @@
+using Glyphstroke.Core;
+
+namespace Glyphstroke.App;
+
+/// <summary>Связка всего: перехват мыши, след, распознавание, выполнение.</summary>
+/// <remarks>
+/// Здесь принимается главное решение каждого росчерка — забрать щелчок себе или
+/// отдать программе. Правило то же, что в версиях для Linux и macOS: щелчок
+/// забирается, только если жест действительно выполнен. Коротким движением
+/// человек хотел открыть контекстное меню, а неопознанный росчерк — это промах,
+/// и молча съедать его нельзя: пользователь решит, что мышь сломалась.
+/// </remarks>
+public sealed class GestureEngine : IMouseHookListener, IDisposable
+{
+    private readonly Store _store;
+    private readonly MouseHook _hook;
+    private readonly TrailWindow _trail;
+    private readonly ActionRunner _actions = new();
+
+    private Settings _settings;
+    private List<Gesture> _gestures = new();
+    private Recognizer _recognizer = new(Array.Empty<GestureDefinition>());
+
+    private readonly List<Point> _stroke = new();
+    private string? _strokeApp;
+
+    public Action<string>? OnLog { get; set; }
+    public Action<Match>? OnRecognized { get; set; }
+
+    public GestureEngine(Store store, TrailWindow trail)
+    {
+        _store = store;
+        _trail = trail;
+        _settings = store.LoadSettings();
+        _hook = new MouseHook(this);
+        _actions.OnLog = message => OnLog?.Invoke(message);
+        Reload();
+    }
+
+    public bool Paused
+    {
+        get => _hook.Paused;
+        set
+        {
+            _hook.Paused = value;
+            if (value)
+            {
+                _trail.Cancel();
+            }
+            WindowContext.Forget();
+            Log(value ? "перехват на паузе" : "перехват продолжен");
+        }
+    }
+
+    public bool IsRunning => _hook.IsRunning;
+
+    public int GestureCount => _gestures.Count(gesture => gesture.Enabled);
+
+    public Settings Settings => _settings;
+
+    /// <summary>Перечитать настройки и жесты с диска.</summary>
+    public void Reload()
+    {
+        _settings = _store.LoadSettings();
+        _gestures = _store.LoadGestures();
+        _trail.Settings = _settings.Overlay;
+        _hook.TriggerButton = _settings.TriggerButton;
+        Rebuild(null);
+        Log($"жестов загружено: {GestureCount}");
+    }
+
+    public void Start()
+    {
+        _hook.Start();
+        Log($"перехват включён, кнопка-модификатор: {_settings.TriggerButton}");
+    }
+
+    public void Stop()
+    {
+        _hook.Stop();
+        _trail.Cancel();
+    }
+
+    public void Dispose() => Stop();
+
+    // --- перехватчик ---
+
+    public void StrokeBegan(Point point)
+    {
+        _strokeApp = WindowContext.Current();
+        _stroke.Clear();
+
+        // Исключённые программы: в них мышь не трогаем вовсе. Проверка именно
+        // здесь, а не при выполнении, — иначе в чужом окне пропадал бы щелчок.
+        if (IsExcluded(_strokeApp))
+        {
+            return;
+        }
+        if (_settings.PauseInFullscreen && WindowContext.IsFullscreen())
+        {
+            return;
+        }
+
+        _stroke.Add(point);
+        Rebuild(_strokeApp);
+        _trail.Dispatcher.Invoke(() => _trail.Begin(point));
+    }
+
+    public void StrokeExtended(Point point)
+    {
+        if (_stroke.Count == 0)
+        {
+            return;
+        }
+        _stroke.Add(point);
+        _trail.Dispatcher.Invoke(() => _trail.Extend(point));
+    }
+
+    public bool StrokeEnded(Point point)
+    {
+        if (_stroke.Count == 0)
+        {
+            return false;
+        }
+        _stroke.Add(point);
+        _trail.Dispatcher.Invoke(() => _trail.End());
+
+        double length = Geometry.PathLength(_stroke);
+        var stroke = _stroke.ToList();
+        _stroke.Clear();
+
+        if (length < _settings.MinStrokePx)
+        {
+            // Это не росчерк, а обычный щелчок: пусть уходит программе.
+            return false;
+        }
+
+        var match = _recognizer.Recognize(stroke);
+        OnRecognized?.Invoke(match);
+
+        var gesture = match.Name is null
+            ? null
+            : _gestures.FirstOrDefault(item => item.Enabled && item.Name == match.Name);
+
+        if (gesture is null)
+        {
+            string closest = match.RunnerUp is null
+                ? string.Empty
+                : $", ближе всех «{match.RunnerUp}» ({match.RunnerUpScore * 100:0}%)";
+            Log($"не опознано: {match.Code}{closest}");
+            // Неопознанный росчерк по умолчанию отдаём программе целиком.
+            return string.Equals(_settings.Unrecognized, "swallow", StringComparison.OrdinalIgnoreCase);
+        }
+
+        Log($"жест «{gesture.Name}» ({match.Code}, {match.Score * 100:0}%)");
+        if (gesture.Menu.Count > 0)
+        {
+            // Есть пункты — вместо своих действий жест открывает меню у курсора.
+            Native.GetCursorPos(out var at);
+            var items = gesture.Menu.ToList();
+            int timeout = _settings.MenuTimeoutMs;
+            _trail.Dispatcher.InvokeAsync(() =>
+            {
+                var overlay = new MenuOverlay(items, at, timeout, item => _actions.Run(item.Actions));
+                overlay.Show();
+                overlay.Activate();
+            });
+            return true;
+        }
+        _actions.Run(gesture.Actions);
+        return true;
+    }
+
+    // --- внутреннее ---
+
+    /// <summary>Собрать распознаватель из жестов, подходящих текущей программе.</summary>
+    /// <remarks>
+    /// Отбор до распознавания, а не после, — не ради скорости: жест «вниз» в
+    /// браузере и жест «вниз» в терминале могут быть разными, и лишний кандидат
+    /// портил бы отрыв от второго места, из-за чего не сработал бы ни один.
+    /// </remarks>
+    private void Rebuild(string? app)
+    {
+        var usable = _gestures
+            .Where(gesture => gesture.Enabled && gesture.Event.Length == 0 && gesture.Matches(app))
+            .Select(gesture => gesture.ToDefinition())
+            .ToList();
+        _recognizer = new Recognizer(usable, _settings.MinScore, _settings.MinMargin);
+    }
+
+    private bool IsExcluded(string? app)
+    {
+        if (app is null || _settings.ExcludedApps.Count == 0)
+        {
+            return false;
+        }
+        return _settings.ExcludedApps.Any(pattern => Gesture.AppMatches(pattern, app));
+    }
+
+    private void Log(string message) => OnLog?.Invoke(message);
+}

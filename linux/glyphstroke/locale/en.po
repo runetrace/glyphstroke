@@ -1,0 +1,1870 @@
+# English translation of Glyphstroke.
+# The keys are the Russian source strings; this catalogue is what makes
+# the program speak English, which is the default language.
+msgid ""
+msgstr ""
+"Project-Id-Version: glyphstroke 1.0.0\n"
+"Language: en\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid ""
+"\n"
+"  ВНИМАНИЕ: установлена версия {0}, а работает {1} — перезапустите службу: systemctl --user restart glyphstroke"
+msgstr ""
+"\n"
+"  WARNING: version {0} is installed but {1} is running — restart the service: systemctl --user restart glyphstroke"
+
+msgid ""
+"\n"
+"! код {0} занят сразу несколькими жестами: {1}"
+msgstr ""
+"\n"
+"! code {0} is claimed by several gestures at once: {1}"
+
+msgid ""
+"\n"
+"Есть незакрытые пункты, поэтому команда вернёт код 1: цепочка «glyphstroke doctor && …» дальше не пойдёт."
+msgstr ""
+"\n"
+"Some checks did not pass, so this command exits with code 1: a «glyphstroke doctor && …» chain stops here."
+
+msgid ""
+"\n"
+"Отдельный раздел: glyphstroke help <часть названия>, например «glyphstroke help действия»"
+msgstr ""
+"\n"
+"A single section: glyphstroke help <part of its title>, for example «glyphstroke help actions»"
+
+msgid ""
+"\n"
+"переключить: glyphstroke profile use ИМЯ; завести: glyphstroke profile new ИМЯ [--copy]"
+msgstr ""
+"\n"
+"switch: glyphstroke profile use NAME; create: glyphstroke profile new NAME [--copy]"
+
+msgid "  [только: {0}]"
+msgstr "  [only in: {0}]"
+
+msgid "  выполнено: {0}{1}{2}"
+msgstr "  done: {0}{1}{2}"
+
+msgid "  меню «{0}» закрыто без выбора"
+msgstr "  menu «{0}» closed with nothing picked"
+
+msgid "  меню «{0}»: {1}"
+msgstr "  menu «{0}»: {1}"
+
+msgid "  меню «{0}»: выбран «{1}»"
+msgstr "  menu «{0}»: picked «{1}»"
+
+msgid "  нарисованное одинаково похоже на каждый, поэтому не сработает ни один —"
+msgstr "  what you draw looks equally like each of them, so none will fire —"
+
+msgid "  образец {0}/{1}: {2} точек, код направлений {3}"
+msgstr "  sample {0}/{1}: {2} points, direction code {3}"
+
+msgid "  оставьте код одному жесту, а остальным задайте свой код или образцы росчерка"
+msgstr "  leave the code to one gesture and give the others their own code or stroke samples"
+
+msgid "  сохранён: {0}"
+msgstr "  saved: {0}"
+
+msgid " — перехват приостановлен"
+msgstr " — capture is paused"
+
+msgid " — сработать не сможет ни один, см. «glyphstroke list»"
+msgstr " — none of them can fire, see «glyphstroke list»"
+
+msgid "# росчерк, снятый glyphstroke {0}"
+msgstr "# stroke captured by glyphstroke {0}"
+
+msgid ", ближайший «{0}» ({1})"
+msgstr ", closest is «{0}» ({1})"
+
+msgid ", клавиши через {0}"
+msgstr ", keys sent through {0}"
+
+msgid ", окно: {0}"
+msgstr ", window: {0}"
+
+msgid "; внимание, коды {0} заняты дважды"
+msgstr "; careful, codes {0} are claimed twice"
+
+msgid "; код: {0}"
+msgstr "; code: {0}"
+
+msgid "<small>Действия выполняются по очереди. Клавиши уходят в ядро через uinput, поэтому работают и в X11, и в Wayland.</small>"
+msgstr "<small>Actions run one after another. Keys go to the kernel through uinput, so they work both in X11 and in Wayland.</small>"
+
+msgid "<small>Зажмите клавишу и ведите пальцем по тачпаду — это росчерк. Жест срабатывает, когда отпускаете палец или клавишу.</small>"
+msgstr "<small>Hold the key and move a finger across the touchpad — that is a stroke. The gesture fires when you lift the finger or release the key.</small>"
+
+msgid "<small>Нарисованное на холсте сразу становится образцом жеста — осталось нажать «Сохранить жест». Образцы сравниваются по форме, поэтому длина и точность росчерка неважны, а двух-трёх достаточно. Код направлений нужен, только когда рисовать не хочется.</small>"
+msgstr "<small>What you draw on the canvas becomes a sample of the gesture right away — all that is left is «Save gesture». Samples are compared by shape, so the length and the precision of the stroke do not matter, and two or three are enough. A direction code is only needed when you would rather not draw.</small>"
+
+msgid "<small>Приложения, пойманные мишенью. Из них выбирают, где работает жест и где перехват не нужен.</small>"
+msgstr "<small>Applications caught with the target. From them you choose where a gesture works and where no capture is needed.</small>"
+
+msgid "<small>Пунктов нет — меню и не появится: жест выполняет свои действия, как раньше. Если пункты есть, жест открывает список у курсора: ведите мышь вниз и отпустите левую кнопку на нужном пункте, правая — отмена. Рисует список расширение оболочки, в X11 — окно следа.</small>"
+msgstr "<small>No items — no menu shows up: the gesture runs its own actions, just as before. With items, the gesture opens a list at the cursor: move the mouse down and release the left button on the item you want, the right one cancels. The list is drawn by the shell extension, or by the trail window in X11.</small>"
+
+msgid ""
+"<small>Файлы настроек: <tt>{0}</tt>\n"
+"Проверка окружения и прав: <tt>glyphstroke doctor</tt></small>"
+msgstr ""
+"<small>Settings files: <tt>{0}</tt>\n"
+"Check the environment and permissions: <tt>glyphstroke doctor</tt></small>"
+
+msgid "<small>демон не запущен</small>"
+msgstr "<small>daemon is not running</small>"
+
+msgid "<small>приостановлен</small>"
+msgstr "<small>paused</small>"
+
+msgid "<small>работает</small>"
+msgstr "<small>running</small>"
+
+msgid "GTK 3 для редактора и следа"
+msgstr "GTK 3 for the editor and the trail"
+
+msgid ""
+"GUI недоступен: {0}\n"
+"Установите: sudo apt install python3-gi gir1.2-gtk-3.0"
+msgstr ""
+"The editor is unavailable: {0}\n"
+"Install it: sudo apt install python3-gi gir1.2-gtk-3.0"
+
+msgid "Rocker: клик левой при зажатой правой"
+msgstr "Rocker: click the left button while holding the right one"
+
+msgid "Rocker: клик правой при зажатой левой"
+msgstr "Rocker: click the right button while holding the left one"
+
+msgid "Glyphstroke {0} — ошибка"
+msgstr "Glyphstroke {0} — problem report"
+
+msgid "Glyphstroke — жесты мыши"
+msgstr "Glyphstroke — mouse gestures"
+
+msgid "Glyphstroke — настройки"
+msgstr "Glyphstroke — settings"
+
+msgid "Glyphstroke — справка"
+msgstr "Glyphstroke — help"
+
+msgid "[i] GNOME на Wayland: след рисует расширение оболочки ({0}, ставится командой «glyphstroke shell-extension install»)"
+msgstr "[i] GNOME on Wayland: the trail is drawn by the shell extension ({0}, installed with «glyphstroke shell-extension install»)"
+
+msgid "[i] «отключаться в полноэкранных» включено: в X11, sway и Hyprland окно видно напрямую, в GNOME про него сообщает расширение оболочки ({0})"
+msgstr "[i] «turn off in fullscreen» is on: in X11, sway and Hyprland the window is visible directly, in GNOME the shell extension reports it ({0})"
+
+msgid "[i] вышла версия {0} (установлена {1}): {2}"
+msgstr "[i] version {0} is out (you have {1}): {2}"
+
+msgid "[i] демон не запущен (служба: systemctl --user status glyphstroke)"
+msgstr "[i] the daemon is not running (service: systemctl --user status glyphstroke)"
+
+msgid "[i] меню под жестом у: {0}. Рисует его расширение оболочки ({1}), в X11 — окно следа; без них жест просто выполнит свои действия"
+msgstr "[i] gestures with a menu: {0}. It is drawn by the shell extension ({1}), or by the trail window in X11; without either the gesture simply runs its own actions"
+
+msgid "[i] набор жестов: {0} (переключить — «glyphstroke profile use ИМЯ»)"
+msgstr "[i] gesture set: {0} (switch it with «glyphstroke profile use NAME»)"
+
+msgid "[i] проверка обновлений выключена (check_updates: false)"
+msgstr "[i] the update check is turned off (check_updates: false)"
+
+msgid "[i] рисование на тачпаде выключено: клавиша не назначена"
+msgstr "[i] drawing on the touchpad is off: no key is assigned"
+
+msgid "[i] рисование на тачпаде: зажмите {0} и ведите пальцем; тачпадов {1}, клавиатур с этой клавишей {2}"
+msgstr "[i] drawing on the touchpad: hold {0} and move a finger; touchpads {1}, keyboards with this key {2}"
+
+msgid "[i] слушаем: {0} (привязать одну — «glyphstroke bind»)"
+msgstr "[i] listening to: {0} (bind a single mouse with «glyphstroke bind»)"
+
+msgid "[i] фильтр жестов по приложению в GNOME на Wayland недоступен, сами жесты работают"
+msgstr "[i] per-application gestures are unavailable in GNOME on Wayland, the gestures themselves work"
+
+msgid "[✓] демон работает: версия {0}, pid {1}, {2}"
+msgstr "[✓] daemon is running: version {0}, pid {1}, {2}"
+
+msgid "[✗] демон работает ({0}), но версии {1}, а установлена {2}"
+msgstr "[✗] the daemon is running ({0}) but its version is {1} while {2} is installed"
+
+msgid "gnome-terminal, xdg-open ~/Загрузки"
+msgstr "gnome-terminal, xdg-open ~/Downloads"
+
+msgid "middle, left, right, back — можно «middle 2»"
+msgstr "middle, left, right, back — «middle 2» works too"
+
+msgid "sudo usermod -aG input {0}, затем выйти из системы и войти снова"
+msgstr "sudo usermod -aG input {0}, then log out and log back in"
+
+msgid "systemd пользователя недоступен — автозапуском отсюда не управлять"
+msgstr "the user systemd is unavailable — autostart cannot be managed from here"
+
+msgid ""
+"{0}\n"
+"\n"
+"Вопросы и сообщения об ошибках: {1}"
+msgstr ""
+"{0}\n"
+"\n"
+"Questions and problem reports: {1}"
+
+msgid "{0} образц."
+msgstr "{0} sample(s)"
+
+msgid "{0} от {1}"
+msgstr "{0} of {1}"
+
+msgid "«{0}» убрано из списка приложений"
+msgstr "«{0}» removed from the application list"
+
+msgid "Автозапуск"
+msgstr "Autostart"
+
+msgid "Автозапуск включён"
+msgstr "Autostart is on"
+
+msgid "Автозапуск выключен"
+msgstr "Autostart is off"
+
+msgid "Боковая кнопка"
+msgstr "Side button"
+
+msgid "Ввести текст"
+msgstr "Type text"
+
+msgid "Вернуть размер окна"
+msgstr "Restore the window size"
+
+msgid "Вкл"
+msgstr "On"
+
+msgid "Во весь экран"
+msgstr "Full screen"
+
+msgid "Вперёд"
+msgstr "Forward"
+
+msgid "Вперёд (rocker)"
+msgstr "Forward (rocker)"
+
+msgid "Временно отпустить мышь: правая кнопка станет обычной, жесты не перехватываются"
+msgstr "Release the mouse for a while: the right button behaves as usual and gestures are not captured"
+
+msgid "Все файлы"
+msgstr "All files"
+
+msgid "Вставить"
+msgstr "Paste"
+
+msgid "Выберите приложение"
+msgstr "Choose an application"
+
+msgid "Выберите приложение в списке"
+msgstr "Select an application in the list"
+
+msgid "Выбрать"
+msgstr "Choose"
+
+msgid "Выбрать приложение или файл"
+msgstr "Choose an application or a file"
+
+msgid "Выбрать…"
+msgstr "Choose…"
+
+msgid "Выгружено жестов: {0} → {1}"
+msgstr "Gestures exported: {0} → {1}"
+
+msgid "Выгрузить в файл…"
+msgstr "Export to a file…"
+
+msgid "Выделить всё"
+msgstr "Select all"
+
+msgid "Выключено"
+msgstr "Off"
+
+msgid "Выполнить сейчас"
+msgstr "Run now"
+
+msgid "Вырезать"
+msgstr "Cut"
+
+msgid "Вышла версия {0}"
+msgstr "Version {0} is out"
+
+msgid "Вышла версия {0} — у вас {1}"
+msgstr "Version {0} is out — you have {1}"
+
+msgid "Где"
+msgstr "Where"
+
+msgid "Дальше от своего пользователя: glyphstroke init && glyphstroke service enable"
+msgstr "Then, as your own user: glyphstroke init && glyphstroke service enable"
+
+msgid "Действия"
+msgstr "Actions"
+
+msgid "Действия выполнены"
+msgstr "Actions executed"
+
+msgid "Демон не отвечает — проверьте «glyphstroke doctor»"
+msgstr "The daemon does not answer — check «glyphstroke doctor»"
+
+msgid "Демон:       {0}"
+msgstr "Daemon:      {0}"
+
+msgid "Добавить действие"
+msgstr "Add an action"
+
+msgid "Добавить действие пункту"
+msgstr "Add an action to the item"
+
+msgid "Добавить жесты из файла; совпадающие по названию будут заменены"
+msgstr "Add gestures from a file; the ones with matching names are replaced"
+
+msgid "Добавить пункт"
+msgstr "Add an item"
+
+msgid "Дополнительная кнопка"
+msgstr "Extra button"
+
+msgid "Если жест не распознан"
+msgstr "When a gesture is not recognised"
+
+msgid "Жест"
+msgstr "Gesture"
+
+msgid "Жест «{0}»: удерживайте {1} и нарисуйте его {2} раз(а)."
+msgstr "Gesture «{0}»: hold {1} and draw it {2} time(s)."
+
+msgid "Жест удалён"
+msgstr "Gesture removed"
+
+msgid "Жесты Glyphstroke"
+msgstr "Glyphstroke gestures"
+
+msgid "Завершить программу"
+msgstr "Quit the program"
+
+msgid "Завести"
+msgstr "Create"
+
+msgid "Завести набор"
+msgstr "Create a set"
+
+msgid "Загрузить"
+msgstr "Load"
+
+msgid "Загрузить из файла…"
+msgstr "Load from a file…"
+
+msgid "Загрузка: {0}{1}"
+msgstr "Import: {0}{1}"
+
+msgid "Зажмите мишень, перетащите на окно приложения и отпустите — приложение запомнится"
+msgstr "Press the target, drag it onto an application window and release — the application will be remembered"
+
+msgid "Закрыть"
+msgstr "Close"
+
+msgid "Закрыть вкладку"
+msgstr "Close tab"
+
+msgid "Закрыть окно"
+msgstr "Close window"
+
+msgid "Записать нарисованное как код направлений"
+msgstr "Store what you drew as a direction code"
+
+msgid "Запуск приложения"
+msgstr "Launch an application"
+
+msgid "Запускать службу при входе в систему"
+msgstr "Start the service when you log in"
+
+msgid "КАТАЛОГ"
+msgstr "DIRECTORY"
+
+msgid "Какое окно под мишенью, сообщает расширение оболочки, а его нет на связи или оно устарело: glyphstroke shell-extension install, затем перезайдите в систему"
+msgstr "The window under the target is reported by the shell extension, and it is not connected or is out of date: glyphstroke shell-extension install, then log in again"
+
+msgid "Клавиша для тачпада"
+msgstr "Touchpad key"
+
+msgid "Клавиша для тачпада: {0} — осталось «Применить настройки»"
+msgstr "Touchpad key: {0} — now press «Apply the settings»"
+
+msgid "Клавиши"
+msgstr "Keys"
+
+msgid "Класс окна"
+msgstr "Window class"
+
+msgid "Кнопка мыши"
+msgstr "Mouse button"
+
+msgid "Кнопка-модификатор"
+msgstr "Trigger button"
+
+msgid "Кнопку так и не нажали — привязка не изменилась"
+msgstr "No button was pressed — the binding is unchanged"
+
+msgid "Код {0} → {1}   [{2}]"
+msgstr "Code {0} → {1}   [{2}]"
+
+msgid "Код из росчерка"
+msgstr "Code from the stroke"
+
+msgid "Код направлений"
+msgstr "Direction code"
+
+msgid "Код направлений: {0}"
+msgstr "Direction code: {0}"
+
+msgid "Колесо вверх при зажатой кнопке"
+msgstr "Wheel up while the trigger is held"
+
+msgid "Колесо вверх при зажатой правой кнопке."
+msgstr "Wheel up while the right button is held."
+
+msgid "Колесо влево при зажатой кнопке"
+msgstr "Wheel left while the trigger is held"
+
+msgid "Колесо вниз при зажатой кнопке"
+msgstr "Wheel down while the trigger is held"
+
+msgid "Колесо вправо при зажатой кнопке"
+msgstr "Wheel right while the trigger is held"
+
+msgid "Команда"
+msgstr "Command"
+
+msgid "Копировать"
+msgstr "Copy"
+
+msgid "Короче этого пути движение считается обычным щелчком"
+msgstr "Below this distance the movement counts as a plain click"
+
+msgid "Крупнее"
+msgstr "Zoom in"
+
+msgid ""
+"Крутить колесо, удерживая правую кнопку. Прокрутка страницы при этом не\n"
+"происходит — событие колеса забирает себе жест."
+msgstr ""
+"Turn the wheel while holding the right button. The page does not scroll:\n"
+"the wheel event is taken by the gesture."
+
+msgid "Куда выгрузить жесты"
+msgstr "Where to export the gestures"
+
+msgid "Лицензия:    {0}, © {1} {2}"
+msgstr "Licence:     {0}, © {1} {2}"
+
+msgid "Мельче"
+msgstr "Zoom out"
+
+msgid "Меню"
+msgstr "Menu"
+
+msgid "Мышей не найдено — проверьте «glyphstroke doctor»"
+msgstr "No mice found — check «glyphstroke doctor»"
+
+msgid "Мышь"
+msgstr "Mouse"
+
+msgid "Набор «{0}» заведён"
+msgstr "The set «{0}» is created"
+
+msgid "Набор «{0}» удалён"
+msgstr "The set «{0}» is removed"
+
+msgid "Набор «{0}»: жестов {1}"
+msgstr "Set «{0}»: {1} gestures"
+
+msgid "Набор жестов: у каждого свои жесты, переключается целиком"
+msgstr "Gesture set: each one keeps its own gestures and switches as a whole"
+
+msgid "Нажать клавишу, которую будете зажимать"
+msgstr "Press the key you are going to hold"
+
+msgid "Нажмите клавишу, которую будете зажимать, рисуя на тачпаде. Esc — отмена."
+msgstr "Press the key you will hold while drawing on the touchpad. Esc cancels."
+
+msgid "Нажмите любую кнопку на нужной мыши…"
+msgstr "Press any button on the mouse you want…"
+
+msgid "Нажмите любую кнопку на той мыши, которую нужно слушать…"
+msgstr "Press any button on the mouse that should be listened to…"
+
+msgid "Назад"
+msgstr "Back"
+
+msgid "Назад (rocker)"
+msgstr "Back (rocker)"
+
+msgid "Название"
+msgstr "Name"
+
+msgid "Назначить…"
+msgstr "Assign…"
+
+msgid "Найти"
+msgstr "Find"
+
+msgid "Написать об ошибке"
+msgstr "Report a problem"
+
+msgid "Напишите на {0}, приложив вывод «glyphstroke about»"
+msgstr "Write to {0} and attach the output of «glyphstroke about»"
+
+msgid "Нарисуйте росчерк или задайте код направлений, затем «Сохранить жест»"
+msgstr "Draw a stroke or set a direction code, then «Save gesture»"
+
+msgid "Нарисуйте росчерк на холсте — он сразу станет образцом (либо впишите код направлений)"
+msgstr "Draw a stroke on the canvas — it becomes a sample right away (or type a direction code)"
+
+msgid "Насколько линия непрозрачна: 100 — сплошная"
+msgstr "How opaque the line is: 100 means solid"
+
+msgid "Насколько похожим на образец должен быть росчерк"
+msgstr "How close to a sample the stroke has to be"
+
+msgid "Настройки программы"
+msgstr "Program settings"
+
+msgid "Настройки сохранены"
+msgstr "Settings saved"
+
+msgid "Настройки:   {0}"
+msgstr "Settings:    {0}"
+
+msgid "Не вышло определить мышь: {0}"
+msgstr "Could not detect the mouse: {0}"
+
+msgid "Не мешать в приложениях"
+msgstr "Stay out of these applications"
+
+msgid "Не перехватывать кнопку"
+msgstr "Do not capture the button"
+
+msgid "Не удалось прочитать файл: {0}"
+msgstr "Could not read the file: {0}"
+
+msgid "Не удалось сохранить: {0}"
+msgstr "Could not save: {0}"
+
+msgid "Непрозрачность, %"
+msgstr "Opacity, %"
+
+msgid "Нет такого раздела. Есть: {0}"
+msgstr "No such section. Available: {0}"
+
+msgid "Ничего"
+msgstr "Nothing"
+
+msgid "Ничего не делать"
+msgstr "Do nothing"
+
+msgid "Новая вкладка"
+msgstr "New tab"
+
+msgid "Новый жест"
+msgstr "New gesture"
+
+msgid "Новый набор жестов"
+msgstr "A new gesture set"
+
+msgid "О программе: версия, автор, связь"
+msgstr "About: version, author, contact"
+
+msgid "Обзор…"
+msgstr "Browse…"
+
+msgid "Обновить"
+msgstr "Reload"
+
+msgid "Обновить страницу"
+msgstr "Reload the page"
+
+msgid "Обновлено:   {0}"
+msgstr "Updated:     {0}"
+
+msgid "Оболочка загружает новые расширения при запуске, поэтому в Wayland"
+msgstr "The shell loads new extensions at start-up, so in Wayland you"
+
+msgid "Оболочка не ответила — попробуйте ещё раз"
+msgstr "The shell did not answer — try again"
+
+msgid "Образец добавлен — осталось «Сохранить жест»"
+msgstr "The sample is added — all that is left is «Save gesture»"
+
+msgid "Образцы очищены"
+msgstr "Samples cleared"
+
+msgid "Обычный размер"
+msgstr "Actual size"
+
+msgid "Окно"
+msgstr "Window"
+
+msgid "Оно выбрано здесь: {0}. Привязки снимутся, а жесты, у которых не останется других приложений, выключатся."
+msgstr "It is chosen here: {0}. The bindings will be dropped, and gestures left without any other application will be switched off."
+
+msgid ""
+"Опишите, что произошло:\n"
+"\n"
+"\n"
+"--- сведения о программе ---\n"
+""
+msgstr ""
+"Describe what happened:\n"
+"\n"
+"\n"
+"--- about the program ---\n"
+""
+
+msgid "Определить"
+msgstr "Detect"
+
+msgid "Особый жест рисовать не нужно — он срабатывает от щелчка или колеса"
+msgstr "A special gesture needs no drawing — it fires from a click or the wheel"
+
+msgid "Отдать клик приложению"
+msgstr "Pass the click to the application"
+
+msgid "Отключаться в полноэкранных"
+msgstr "Turn off in fullscreen"
+
+msgid "Открыть"
+msgstr "Open"
+
+msgid "Открыть страницу"
+msgstr "Open the page"
+
+msgid "Откуда загрузить жесты"
+msgstr "Where to load the gestures from"
+
+msgid "Отмена"
+msgstr "Cancel"
+
+msgid "Отменить"
+msgstr "Undo"
+
+msgid "Отметить приложения из списка"
+msgstr "Tick applications from the list"
+
+msgid "Очистить образцы"
+msgstr "Clear the samples"
+
+msgid "Ошибка: {0}"
+msgstr "Error: {0}"
+
+msgid "Пауза, мс"
+msgstr "Delay, ms"
+
+msgid "Перезапустить службу"
+msgstr "Restart the service"
+
+msgid "Переключить окно"
+msgstr "Switch windows"
+
+msgid "Перенос жестов"
+msgstr "Moving gestures"
+
+msgid "Перетащите мишень на окно нужного приложения и отпустите над ним"
+msgstr "Drag the target onto the window of the application you want and release it there"
+
+msgid "Перехват включён"
+msgstr "Capture is on"
+
+msgid "Перехват жестов"
+msgstr "Gesture capture"
+
+msgid "Перехват приостановлен: правая кнопка работает как обычно"
+msgstr "Capture is paused: the right button works as usual"
+
+msgid "Печать"
+msgstr "Print"
+
+msgid "Письмо открыто в почтовой программе ({0})"
+msgstr "The e-mail is open in your mail program ({0})"
+
+msgid "Повторить"
+msgstr "Redo"
+
+msgid "Под мишенью не оказалось окна приложения"
+msgstr "There was no application window under the target"
+
+msgid "Пока клавиша зажата, палец по тачпаду рисует росчерк"
+msgstr "While the key is held, a finger on the touchpad draws a stroke"
+
+msgid "Пока окно развёрнуто во весь экран, мышь отпускается: в игре она должна принадлежать игре. Перехват вернётся сам"
+msgstr "While a window is fullscreen the mouse is let go: in a game it belongs to the game. The capture comes back on its own"
+
+msgid "Показывать имя жеста"
+msgstr "Show the gesture name"
+
+msgid "Порог длины росчерка"
+msgstr "Stroke length threshold"
+
+msgid "Почта:       {0}  (сюда же об ошибках)"
+msgstr "E-mail:      {0}  (problem reports too)"
+
+msgid "Пояснение"
+msgstr "Description"
+
+msgid "Правая кнопка"
+msgstr "Right button"
+
+msgid "Предыдущая вкладка"
+msgstr "Previous tab"
+
+msgid "Предыдущая вкладка (колесо)"
+msgstr "Previous tab (wheel)"
+
+msgid "Привязка снята: слушаем все найденные мыши"
+msgstr "Binding cleared: listening to every mouse found"
+
+msgid "Пригодится после правки настроек руками"
+msgstr "Useful after editing the settings by hand"
+
+msgid "Приложение"
+msgstr "Application"
+
+msgid "Приложение «{0}» запомнено"
+msgstr "Application «{0}» remembered"
+
+msgid "Приложение «{0}» запомнено и отмечено"
+msgstr "Application «{0}» remembered and ticked"
+
+msgid "Приложение «{0}» уже было в списке"
+msgstr "Application «{0}» was already in the list"
+
+msgid "Приложение «{0}» уже было в списке — отмечено"
+msgstr "Application «{0}» was already in the list — ticked"
+
+msgid "Приложения"
+msgstr "Applications"
+
+msgid "Приложения (*.desktop)"
+msgstr "Applications (*.desktop)"
+
+msgid "Применить настройки"
+msgstr "Apply the settings"
+
+msgid ""
+"Пример действия над окном. Работает через расширение оболочки и сворачивает\n"
+"именно то окно, над которым начали рисовать, — это важно на двух экранах.\n"
+"Включите жест и при желании замените код направлений своим росчерком."
+msgstr ""
+"An example of a window action. It works through the shell extension and minimises\n"
+"the very window you started drawing over, which matters with two monitors.\n"
+"Enable the gesture and replace the direction code with your own stroke if you like."
+
+msgid ""
+"Пример жеста для одного приложения: срабатывает только в браузерах.\n"
+"Фильтр apps сверяется с «класс окна | заголовок» активного окна."
+msgstr ""
+"An example of a per-application gesture: it fires in browsers only.\n"
+"The apps filter is matched against «window class | title» of the active window."
+
+msgid "Проверить действия, не рисуя жест"
+msgstr "Try the actions without drawing the gesture"
+
+msgid "Проверить не вышло: {0}"
+msgstr "The check did not work out: {0}"
+
+msgid "Проверить распознавание"
+msgstr "Check the matching"
+
+msgid "Проверить сейчас"
+msgstr "Check now"
+
+msgid "Проверять обновления"
+msgstr "Check for updates"
+
+msgid "Проверяю обновления…"
+msgstr "Checking for updates…"
+
+msgid "Программа"
+msgstr "Program"
+
+msgid "Прокрутка"
+msgstr "Scroll"
+
+msgid "Раз в сутки спрашивать страницу выпусков, не вышла ли версия новее. Сама программа не обновляется: она только показывает, что обновление есть"
+msgstr "Once a day, ask the releases page whether a newer version is out. The program does not update itself: it only shows that an update exists"
+
+msgid "Развернуть окно"
+msgstr "Maximise the window"
+
+msgid "Разработчик: {0}"
+msgstr "Developer:   {0}"
+
+msgid "Распознавание"
+msgstr "Recognition"
+
+msgid "Расширение:  {0}"
+msgstr "Extension:   {0}"
+
+msgid "Рисовать след"
+msgstr "Draw the trail"
+
+msgid "Рисовать, пока зажата"
+msgstr "Draw while holding"
+
+msgid "Рисуйте жесты (Ctrl+C — выход). Действия не выполняются."
+msgstr "Draw gestures (Ctrl+C to quit). Actions are not executed."
+
+msgid "Рисуйте жесты — покажу, что распознаётся. Ctrl+C — выход."
+msgstr "Draw gestures and I will show what is recognised. Ctrl+C to quit."
+
+msgid "Росчерк"
+msgstr "Stroke"
+
+msgid "Росчерк вверх"
+msgstr "Stroke upwards"
+
+msgid "Росчерк влево — «назад» в браузере и файловом менеджере"
+msgstr "Stroke to the left — «back» in a browser and a file manager"
+
+msgid "Росчерк вниз"
+msgstr "Stroke downwards"
+
+msgid "Росчерк вправо — «вперёд»"
+msgstr "Stroke to the right — «forward»"
+
+msgid "Росчерк — рисуется мышью"
+msgstr "Stroke — drawn with the mouse"
+
+msgid "Свернуть окно"
+msgstr "Minimise the window"
+
+msgid "Сеанс:       {0}, окружение {1}"
+msgstr "Session:     {0}, desktop {1}"
+
+msgid "Скопировать жесты текущего набора"
+msgstr "Copy the gestures of the current set"
+
+msgid "След и подсказки"
+msgstr "Trail and hints"
+
+msgid "Следующая вкладка"
+msgstr "Next tab"
+
+msgid "Следующая вкладка (колесо)"
+msgstr "Next tab (wheel)"
+
+msgid "Служба glyphstroke не запущена — спросить, какое окно под мишенью, некого"
+msgstr "The glyphstroke service is not running — there is nobody to ask which window is under the target"
+
+msgid "Служба запускается при входе в систему. Отжать — вернуть как было"
+msgstr "The service starts when you log in. Release the button to put it back the way it was"
+
+msgid "Служба и автозапуск"
+msgstr "Service and autostart"
+
+msgid "Служба перезапущена"
+msgstr "The service has been restarted"
+
+msgid "Слушаем только «{0}»"
+msgstr "Listening to «{0}» only"
+
+msgid "Слушать"
+msgstr "Listening to"
+
+msgid "Слушать все"
+msgstr "Listen to all"
+
+msgid "Слушать только одну мышь: если она в системе одна, привяжется сразу, иначе попросит нажать на ней кнопку"
+msgstr "Listen to a single mouse: if there is only one, it binds at once, otherwise it asks you to press a button on it"
+
+msgid "Сначала выберите жест слева или заведите новый"
+msgstr "Pick a gesture on the left first, or create a new one"
+
+msgid "Сначала нарисуйте росчерк на холсте"
+msgstr "Draw a stroke on the canvas first"
+
+msgid "Снимок экрана"
+msgstr "Screenshot"
+
+msgid "Создать"
+msgstr "New"
+
+msgid "Состояние:"
+msgstr "State:"
+
+msgid "Сохранено, но код {0} уже занят: {1}. Пока так — не сработает ни один жест"
+msgstr "Saved, but the code {0} is already taken: {1}. As it stands, neither gesture will fire"
+
+msgid "Сохранено: «{0}»"
+msgstr "Saved: «{0}»"
+
+msgid "Сохранено: «{0}» ({1})"
+msgstr "Saved: «{0}» ({1})"
+
+msgid "Сохранить"
+msgstr "Save"
+
+msgid "Сохранить все жесты и их действия в один файл"
+msgstr "Save every gesture together with its actions into a single file"
+
+msgid "Сохранить жест"
+msgstr "Save gesture"
+
+msgid "Список пуст — перетащите мишень на окно приложения"
+msgstr "The list is empty — drag the target onto an application window"
+
+msgid "Справка: как всё устроено и что умеет"
+msgstr "Help: how it works and what it can do"
+
+msgid "Средняя кнопка"
+msgstr "Middle button"
+
+msgid "Стандартное действие"
+msgstr "Standard action"
+
+msgid "Строгость распознавания"
+msgstr "Matching strictness"
+
+msgid "Тачпад"
+msgstr "Touchpad"
+
+msgid "Терминал"
+msgstr "Terminal"
+
+msgid "Тип жеста"
+msgstr "Gesture kind"
+
+msgid "Толщина линии, точек"
+msgstr "Line width, pixels"
+
+msgid "Только в приложениях"
+msgstr "Only in applications"
+
+msgid "Только следить за жестами: кнопка при этом работает как обычно"
+msgstr "Only watch for gestures: the button keeps working as usual"
+
+msgid "У жеста должно быть название"
+msgstr "A gesture needs a name"
+
+msgid "Убрать «{0}» из списка приложений?"
+msgstr "Remove «{0}» from the application list?"
+
+msgid "Убрать действие"
+msgstr "Remove the action"
+
+msgid "Убрать приложение из списка вместе с привязками к нему"
+msgstr "Remove the application from the list together with its bindings"
+
+msgid "Убрать пункт"
+msgstr "Remove the item"
+
+msgid "Уголок вниз-влево — открыть терминал"
+msgstr "Down-then-left corner — open a terminal"
+
+msgid "Уголок вниз-вправо, как в StrokeIt"
+msgstr "Down-then-right corner, as in StrokeIt"
+
+msgid "Удалить"
+msgstr "Remove"
+
+msgid "Удалить жест"
+msgstr "Delete the gesture"
+
+msgid "Удалить жест «{0}»?"
+msgstr "Delete the gesture «{0}»?"
+
+msgid "Удалить набор"
+msgstr "Remove the set"
+
+msgid "Удалить набор «{0}» вместе с жестами ({1})?"
+msgstr "Remove the set «{0}» together with its gestures ({1})?"
+
+msgid "Удерживая левую кнопку, щёлкнуть правой — «вперёд»."
+msgstr "Hold the left button and click the right one — «forward»."
+
+msgid ""
+"Удерживая правую кнопку, щёлкнуть левой — «назад». Рисовать ничего не нужно.\n"
+"Включите, если привыкли к такому по браузерным расширениям."
+msgstr ""
+"Hold the right button and click the left one — «back». Nothing to draw.\n"
+"Enable it if you are used to this from browser extensions."
+
+msgid "Узнаю, что это за окно…"
+msgstr "Finding out which window this is…"
+
+msgid "Управление устройством жестами"
+msgstr "Control the computer with gestures"
+
+msgid "Установлена последняя версия {0}"
+msgstr "The latest version {0} is installed"
+
+msgid "Файлы жестов (*.yaml)"
+msgstr "Gesture files (*.yaml)"
+
+msgid "Цвет и толщина"
+msgstr "Colour and width"
+
+msgid "Цвет линии следа"
+msgstr "Colour of the trail line"
+
+msgid "Через сколько миллисекунд удержания показать список жестов; 0 — не показывать"
+msgstr "After how many milliseconds of holding to show the gesture list; 0 disables it"
+
+msgid "Шпаргалка после, мс"
+msgstr "Cheat sheet after, ms"
+
+msgid "Это окно самого Glyphstroke — отпустите мишень над окном того приложения, которое нужно запомнить"
+msgstr "This is a Glyphstroke window — release the target over the window of the application you want to remember"
+
+msgid "Эту клавишу назначить не выйдет"
+msgstr "This key cannot be assigned"
+
+msgid "Язык"
+msgstr "Language"
+
+msgid "Язык интерфейса. Новый язык подхватится при следующем запуске"
+msgstr "Interface language. The new language is picked up at the next start"
+
+msgid "Язык сменится при следующем запуске редактора"
+msgstr "The language will change the next time the editor starts"
+
+msgid "автозапуск через systemd --user"
+msgstr "autostart through systemd --user"
+
+msgid "без перехвата"
+msgstr "no capture"
+
+msgid "в %s нет строки Exec"
+msgstr "no Exec line in %s"
+
+msgid "в домашнем каталоге расширение версии {0}, в программе {1}: перезапустите демон (systemctl --user restart glyphstroke) — он обновит расширение сам, либо сделайте это руками (glyphstroke shell-extension install); затем перезайдите в систему"
+msgstr "the extension in your home directory is version {0}, the program carries {1}: restart the daemon (systemctl --user restart glyphstroke) and it will refresh the extension itself, or do it by hand (glyphstroke shell-extension install); then log in again"
+
+msgid "везде"
+msgstr "everywhere"
+
+msgid "вернуть перехват"
+msgstr "resume capturing"
+
+msgid "версия {0}, pid {1}, {2}"
+msgstr "version {0}, pid {1}, {2}"
+
+msgid "виртуальная клавиатура недоступна: %s"
+msgstr "the virtual keyboard is unavailable: %s"
+
+msgid "включено"
+msgstr "enabled"
+
+msgid "включить не удалось — сделайте это в приложении «Расширения»"
+msgstr "could not enable it — do that in the Extensions application"
+
+msgid "включён"
+msgstr "on"
+
+msgid "вместе с настройками"
+msgstr "together with the settings"
+
+msgid "все найденные мыши"
+msgstr "every mouse found"
+
+msgid "выберите действие из списка"
+msgstr "pick an action from the list"
+
+msgid "выбрать нажатием кнопки, даже если мышь одна"
+msgstr "choose by pressing a button even if there is only one mouse"
+
+msgid "выгружено жестов: {0} → {1}"
+msgstr "gestures exported: {0} → {1}"
+
+msgid "выгрузить вместе с настройками"
+msgstr "export together with the settings"
+
+msgid "выгрузить жесты в файл"
+msgstr "export the gestures into a file"
+
+msgid "выключен"
+msgstr "off"
+
+msgid "выключено"
+msgstr "disabled"
+
+msgid "выключены: {0}"
+msgstr "switched off: {0}"
+
+msgid "выражение «{0}»"
+msgstr "expression «{0}»"
+
+msgid "вышла версия %s — установленная %s"
+msgstr "version %s is out — the installed one is %s"
+
+msgid "вышла версия {0}"
+msgstr "version {0} is out"
+
+msgid "группа input действует у {0}"
+msgstr "the input group is in effect for {0}"
+
+msgid "группа назначена, но этот сеанс начался раньше и её не видит. Выйдите из системы и войдите снова; для текущего терминала хватит «newgrp input»"
+msgstr "the group is assigned but this session started earlier and does not see it. Log out and log back in; for the current terminal «newgrp input» is enough"
+
+msgid "действие %s (%r) не выполнено: %s"
+msgstr "action %s (%r) failed: %s"
+
+msgid "действие «окно: %s» требует расширения оболочки — поставьте его: glyphstroke shell-extension install"
+msgstr "the action «window: %s» needs the shell extension — install it: glyphstroke shell-extension install"
+
+msgid "действие требует виртуальной мыши, но её нет"
+msgstr "the action needs the virtual pointer, and there is none"
+
+msgid "действие: команда оболочки"
+msgstr "action: a shell command"
+
+msgid "действие: комбинация клавиш, например ctrl+w"
+msgstr "action: a key combination, for example ctrl+w"
+
+msgid "демон %s запущен, кнопка-модификатор: %s"
+msgstr "daemon %s started, trigger button: %s"
+
+msgid "демон версии {0} (pid {1})"
+msgstr "daemon version {0} (pid {1})"
+
+msgid "демон жестов мыши"
+msgstr "the mouse gesture daemon"
+
+msgid "демон закрыл канал"
+msgstr "the daemon closed the channel"
+
+msgid "демон запущен, показываю распознавание через его канал"
+msgstr "the daemon is running, showing its matching through its channel"
+
+msgid ""
+"демон не запущен — канал не открыт.\n"
+"Запустите службу («glyphstroke service enable») или сам демон («glyphstroke daemon»)"
+msgstr ""
+"the daemon is not running — the channel is closed.\n"
+"Start the service («glyphstroke service enable») or the daemon itself («glyphstroke daemon»)"
+
+msgid "демон не запущен — приостанавливать нечего"
+msgstr "the daemon is not running — nothing to pause"
+
+msgid "демон остановлен"
+msgstr "daemon stopped"
+
+msgid "добавить ещё и код направлений нарисованного"
+msgstr "also store the direction code of what was drawn"
+
+msgid "добавлено {0}"
+msgstr "added {0}"
+
+msgid "доступ даёт группа input"
+msgstr "access comes from the input group"
+
+msgid "доступ к /dev/uinput ({0})"
+msgstr "access to /dev/uinput ({0})"
+
+msgid "если мышь не видна, задайте device_include в settings.yaml"
+msgstr "if your mouse is not listed, set device_include in settings.yaml"
+
+msgid "жест «%s» (%.2f, код %s), окно: %s"
+msgstr "gesture «%s» (%.2f, code %s), window: %s"
+
+msgid "жестов в наборе: {0}"
+msgstr "gestures in the set: {0}"
+
+msgid "жестов загружено: {0}"
+msgstr "gestures loaded: {0}"
+
+msgid "жестов нет — выполните «glyphstroke init»"
+msgstr "there are no gestures — run «glyphstroke init»"
+
+msgid "жестов: {0}"
+msgstr "gestures: {0}"
+
+msgid "жесты мыши для Linux — аналог Glyphstroke"
+msgstr "mouse gestures for Linux"
+
+msgid "жесты-glyphstroke.yaml"
+msgstr "glyphstroke-gestures.yaml"
+
+msgid "завести набор копией текущего"
+msgstr "create the set as a copy of the current one"
+
+msgid "загружено жестов: %d (особых: %d)"
+msgstr "gestures loaded: %d (special: %d)"
+
+msgid "загрузить жесты из файла"
+msgstr "load gestures from a file"
+
+msgid "заменено {0}"
+msgstr "replaced {0}"
+
+msgid "заменить прежние образцы"
+msgstr "replace the previous samples"
+
+msgid "записать жест с мыши"
+msgstr "record a gesture from the mouse"
+
+msgid "запустить перехват жестов"
+msgstr "start capturing gestures"
+
+msgid "из исключений тоже убрано"
+msgstr "removed from the exclusions as well"
+
+msgid "к каналу подключился клиент (всего %d)"
+msgstr "a client connected to the channel (%d total)"
+
+msgid "как в системе"
+msgstr "as in the system"
+
+msgid "Тема"
+msgstr "Theme"
+
+msgid "светлая"
+msgstr "light"
+
+msgid "тёмная"
+msgstr "dark"
+
+msgid "Тема оформления окон программы"
+msgstr "The look of the program windows"
+
+msgid "какие мыши будут перехвачены"
+msgstr "which mice will be captured"
+
+msgid "канал не открылся: %s"
+msgstr "the channel did not open: %s"
+
+msgid "канал следа: %s"
+msgstr "trail channel: %s"
+
+msgid "канал следа: {0} ({1})"
+msgstr "trail channel: {0} ({1})"
+
+msgid "каталог настроек {0}"
+msgstr "settings directory {0}"
+
+msgid "каталог:   {0}"
+msgstr "directory: {0}"
+
+msgid "каталога нет: запустите демон («glyphstroke service enable») или поставьте вручную — glyphstroke shell-extension install"
+msgstr "there is no such directory: start the daemon («glyphstroke service enable») or install it by hand — glyphstroke shell-extension install"
+
+msgid "клавиша для тачпада на устройстве: %s (%s)"
+msgstr "touchpad key on device: %s (%s)"
+
+msgid "класс окна: {0}"
+msgstr "window class: {0}"
+
+msgid "клиент умеет: %s"
+msgstr "the client can do: %s"
+
+msgid "кнопку так и не нажали, ничего не поменял"
+msgstr "no button was pressed, nothing changed"
+
+msgid "кого добавить в группу input"
+msgstr "who to add to the input group"
+
+msgid "код %s занят жестами %s — не сработает ни один"
+msgstr "code %s is claimed by gestures %s — none of them will fire"
+
+msgid "код {0:<12} → {1:<24} [{2}]"
+msgstr "code {0:<12} → {1:<24} [{2}]"
+
+msgid "код {0:<12} → «{1}» ({2})"
+msgstr "code {0:<12} → «{1}» ({2})"
+
+msgid "код {0:<12} → не распознано{1}"
+msgstr "code {0:<12} → not recognised{1}"
+
+msgid "код направлений жеста: {0}"
+msgstr "direction code of the gesture: {0}"
+
+msgid "коды жестов не пересекаются"
+msgstr "gesture codes do not overlap"
+
+msgid "колесо вверх"
+msgstr "wheel up"
+
+msgid "колесо влево"
+msgstr "wheel left"
+
+msgid "колесо вниз"
+msgstr "wheel down"
+
+msgid "колесо вправо"
+msgstr "wheel right"
+
+msgid "команда %s не выполнена"
+msgstr "command %s failed"
+
+msgid "команда: %s"
+msgstr "command: %s"
+
+msgid "куда сохранить (например ~/жесты.yaml)"
+msgstr "where to save it (for example ~/gestures.yaml)"
+
+msgid "любая строка латиницей"
+msgstr "any latin text"
+
+msgid "меню «%s» закрыто без выбора"
+msgstr "menu «%s» closed with nothing picked"
+
+msgid "меню «%s»: %d пунктов"
+msgstr "menu «%s»: %d items"
+
+msgid "меню «%s»: выбран пункт «%s»"
+msgstr "menu «%s»: picked the item «%s»"
+
+msgid "меню закрылось само: мышь не двигалась"
+msgstr "the menu closed by itself: the mouse stood still"
+
+msgid "меню: {0}"
+msgstr "menu: {0}"
+
+msgid "модуль python3-evdev"
+msgstr "the python3-evdev module"
+
+msgid "модуль uinput включён в автозагрузку"
+msgstr "the uinput module is enabled at boot"
+
+msgid "мышей не найдено — посмотрите «glyphstroke doctor»"
+msgstr "no mice found — see «glyphstroke doctor»"
+
+msgid "мышей нет — жесты рисуются на тачпаде, пока зажата %s"
+msgstr "no mice — gestures are drawn on the touchpad while %s is held"
+
+msgid "мышь"
+msgstr "mouse"
+
+msgid "мышь {0} занята другим процессом ({1}). Похоже, работает демон — остановите его: systemctl --user stop glyphstroke"
+msgstr "the mouse {0} is held by another process ({1}). The daemon is probably running — stop it: systemctl --user stop glyphstroke"
+
+msgid "мышь не найдена — посмотрите «glyphstroke doctor»"
+msgstr "no mouse found — see «glyphstroke doctor»"
+
+msgid "набор «%s» не найден — беру основной"
+msgstr "the set «%s» is missing — falling back to the base one"
+
+msgid "набор «{0}» заведён (жестов: {1})"
+msgstr "the set «{0}» is created (gestures: {1})"
+
+msgid "набор «{0}» удалён"
+msgstr "the set «{0}» is removed"
+
+msgid "набор «{0}» уже есть"
+msgstr "the set «{0}» already exists"
+
+msgid ""
+"набор: {0}\n"
+""
+msgstr ""
+"set: {0}\n"
+""
+
+msgid "наборы жестов и переключение между ними"
+msgstr "gesture sets and switching between them"
+
+msgid "название жеста"
+msgstr "the name of the gesture"
+
+msgid "название набора"
+msgstr "set name"
+
+msgid "название пункта — его и видно в меню"
+msgstr "item name — this is what the menu shows"
+
+msgid "найдено мышей: {0}"
+msgstr "mice found: {0}"
+
+msgid "нарисовано: код {0}, точек {1}"
+msgstr "drawn: code {0}, {1} points"
+
+msgid "нарисуйте здесь левой кнопкой"
+msgstr "draw here with the left button"
+
+msgid "настройки перенесены из %s — прежний каталог остался нетронутым"
+msgstr "settings moved from %s — the previous directory is left untouched"
+
+msgid "настройки применены"
+msgstr "settings applied"
+
+msgid "настройки: {0}"
+msgstr "settings: {0}"
+
+msgid "не выполнять действия"
+msgstr "do not execute the actions"
+
+msgid "не запущен"
+msgstr "not running"
+
+msgid "не знаю такого действия над окном: {0}. Есть: {1}"
+msgstr "no such window action: {0}. Available: {1}"
+
+msgid "не знаю такого стандартного действия: {0}"
+msgstr "I do not know such a standard action: {0}"
+
+msgid "не найдено ни одной мыши. Проверьте права на /dev/input/event* (нужна группа input) или задайте device_include в settings.yaml"
+msgstr "no mouse found. Check the permissions on /dev/input/event* (the input group is needed) or set device_include in settings.yaml"
+
+msgid "не обязательно — если нарисованы образцы, оставьте пустым"
+msgstr "optional — leave it empty if there are samples"
+
+msgid "не перехватывать кнопку"
+msgstr "do not capture the button"
+
+msgid "не перехватывать кнопку, только следить"
+msgstr "do not capture the button, only watch"
+
+msgid "не распознано (код %s, ближайший %s %.2f)"
+msgstr "not recognised (code %s, closest %s %.2f)"
+
+msgid "не удалось запустить отрисовку следа: %s"
+msgstr "could not start drawing the trail: %s"
+
+msgid "не удалось захватить %s: %s"
+msgstr "could not grab %s: %s"
+
+msgid "не удалось определить окно: %s"
+msgstr "could not tell the active window: %s"
+
+msgid "не удалось перенести настройки: %s"
+msgstr "could not move the settings: %s"
+
+msgid "не удалось подключиться к демону: {0}"
+msgstr "could not connect to the daemon: {0}"
+
+msgid "не удалось проверить расширение оболочки: %s"
+msgstr "could not check the shell extension: %s"
+
+msgid "не удалось прочитать файл: {0}"
+msgstr "could not read the file: {0}"
+
+msgid "не удалось сохранить состояние проверки: %s"
+msgstr "could not save the state of the check: %s"
+
+msgid "не установлено"
+msgstr "not installed"
+
+msgid "не читается %s: %s"
+msgstr "cannot read %s: %s"
+
+msgid "недоступно"
+msgstr "unavailable"
+
+msgid "неизвестная клавиша: {0}"
+msgstr "unknown key: {0}"
+
+msgid "неизвестная кнопка мыши: {0}"
+msgstr "unknown mouse button: {0}"
+
+msgid "неизвестная команда: %s"
+msgstr "unknown command: %s"
+
+msgid "неизвестно"
+msgstr "unknown"
+
+msgid "неизвестный тип действия: %s"
+msgstr "unknown action type: %s"
+
+msgid "нет доступа к %s: %s"
+msgstr "no access to %s: %s"
+
+msgid "нет набора «{0}»"
+msgstr "there is no set «{0}»"
+
+msgid "нет прав: %s. Запустите «glyphstroke doctor»"
+msgstr "no permission: %s. Run «glyphstroke doctor»"
+
+msgid ""
+"нет прав: {0}\n"
+"запустите «glyphstroke doctor»"
+msgstr ""
+"no permission: {0}\n"
+"run «glyphstroke doctor»"
+
+msgid "нет устройства"
+msgstr "no device"
+
+msgid "ни в каких"
+msgstr "none"
+
+msgid "ничего"
+msgstr "nothing"
+
+msgid "новое устройство %s не открылось: %s"
+msgstr "the new device %s did not open: %s"
+
+msgid "новых версий нет (или сервер не ответил)"
+msgstr "no newer version (or the server did not answer)"
+
+msgid "нужно выйти из системы и войти снова — после этого след появится."
+msgstr "have to log out and log back in — the trail appears after that."
+
+msgid "нужно имя набора"
+msgstr "a set name is required"
+
+msgid "нужны права root: sudo glyphstroke install"
+msgstr "root permissions are needed: sudo glyphstroke install"
+
+msgid "о программе: версия, автор, связь"
+msgstr "about: version, author, contact"
+
+msgid "оболочку"
+msgstr "the shell"
+
+msgid "образцов: {0}"
+msgstr "samples: {0}"
+
+msgid "образцов: {0}; код нарисованного: {1}"
+msgstr "samples: {0}; code of the drawing: {1}"
+
+msgid "окно во весь экран — отпускаю мышь"
+msgstr "a fullscreen window — letting the mouse go"
+
+msgid "определение активного окна: %s"
+msgstr "active window detection: %s"
+
+msgid "основной"
+msgstr "base"
+
+msgid "основной набор удалить нельзя"
+msgstr "the base set cannot be removed"
+
+msgid "особый жест %s не привязан к этому окну (%s)"
+msgstr "the special gesture %s is not bound for this window (%s)"
+
+msgid "особый жест «%s» (%s), окно: %s"
+msgstr "special gesture «%s» (%s), window: %s"
+
+msgid "осталось «Применить настройки»"
+msgstr "now press «Apply the settings»"
+
+msgid "осталось «Сохранить жест»"
+msgstr "now press «Save gesture»"
+
+msgid "остальные устройства ввода демон трогать не будет"
+msgstr "the daemon will leave every other input device alone"
+
+msgid "останавливаю службу на время определения…"
+msgstr "stopping the service while detecting…"
+
+msgid "останавливаю службу, чтобы забрать мышь…"
+msgstr "stopping the service to take the mouse…"
+
+msgid "откуда читать"
+msgstr "where to read it from"
+
+msgid "ошибка: {0}"
+msgstr "error: {0}"
+
+msgid "перезаписать существующие"
+msgstr "overwrite the existing ones"
+
+msgid "переключить перехват"
+msgstr "toggle capturing"
+
+msgid "переключиться: glyphstroke profile use {0}"
+msgstr "switch to it: glyphstroke profile use {0}"
+
+msgid "перетащите мишень на окно, чтобы добавить"
+msgstr "drag the target onto a window to add it"
+
+msgid "перехват "
+msgstr "capture "
+
+msgid "перехват %s"
+msgstr "capture %s"
+
+msgid "перехват включён"
+msgstr "capture is on"
+
+msgid "перехват приостановлен"
+msgstr "capture is paused"
+
+msgid "перехват приостановлен — правая кнопка работает как обычно"
+msgstr "capture is paused — the right button works as usual"
+
+msgid "перехват: %s (%s)"
+msgstr "capturing: %s (%s)"
+
+msgid "перечитываю настройки"
+msgstr "reloading the settings"
+
+msgid "по постоянной ссылке {0}"
+msgstr "by the stable link {0}"
+
+msgid "подключена мышь: %s (%s)"
+msgstr "mouse connected: %s (%s)"
+
+msgid "подходящих устройств не найдено"
+msgstr "no suitable devices found"
+
+msgid "поиск мышей"
+msgstr "looking for mice"
+
+msgid "показывать распознанное, ничего не выполняя"
+msgstr "show what is recognised without executing it"
+
+msgid "показывать распознанное, но не выполнять действия"
+msgstr "show what is recognised but do not execute the actions"
+
+msgid "полноэкранное окно закрылось — забираю мышь обратно"
+msgstr "the fullscreen window is gone — taking the mouse back"
+
+msgid "пользователь {0} добавлен в группу input (нужен перезаход в систему)"
+msgstr "the user {0} has been added to the input group (a re-login is needed)"
+
+msgid "правило udev и группа input (нужен root)"
+msgstr "the udev rule and the input group (root needed)"
+
+msgid "правило udev ставит ./install.sh — проверьте, что владелец устройства root:input, а права 660"
+msgstr "the udev rule is installed by ./install.sh — check that the device is owned by root:input with mode 660"
+
+msgid "правило udev: {0}"
+msgstr "udev rule: {0}"
+
+msgid "привязано к устройству: {0}"
+msgstr "bound to the device: {0}"
+
+msgid "привязано: {0}"
+msgstr "bound: {0}"
+
+msgid "привязать по точному имени устройства"
+msgstr "bind by the exact device name"
+
+msgid "привязка снята у жестов: {0}"
+msgstr "binding dropped from gestures: {0}"
+
+msgid "привязка снята: демон снова берёт все найденные мыши"
+msgstr "binding cleared: the daemon takes every mouse it finds again"
+
+msgid "приложение не найдено: %s"
+msgstr "application not found: %s"
+
+msgid "приложений в списке прибавилось: {0}"
+msgstr "applications added to the list: {0}"
+
+msgid "применить и настройки из файла"
+msgstr "apply the settings from the file as well"
+
+msgid "приостановить перехват (правая кнопка станет обычной)"
+msgstr "pause capturing (the right button becomes ordinary)"
+
+msgid "приостановлен"
+msgstr "paused"
+
+msgid "проверить окружение и права"
+msgstr "check the environment and permissions"
+
+msgid "проверить, не вышла ли версия новее"
+msgstr "check whether a newer version is out"
+
+msgid "проверка обновлений не удалась: %s"
+msgstr "the update check failed: %s"
+
+msgid "пустая комбинация: {0}"
+msgstr "empty combination: {0}"
+
+msgid "пустое имя клавиши"
+msgstr "empty key name"
+
+msgid "путь к .desktop или к программе — удобнее выбрать кнопкой «Обзор»"
+msgstr "a path to a .desktop file or to a program — the «Browse» button is easier"
+
+msgid "расширение включено"
+msgstr "the extension is enabled"
+
+msgid "расширение не найдено в пакете программы"
+msgstr "the extension is missing from the program files"
+
+msgid "расширение оболочки обновлено; чтобы оболочка подхватила новую версию, перезайдите в систему"
+msgstr "the shell extension has been updated; log in again so that the shell picks up the new version"
+
+msgid "расширение оболочки совпадает с программой (версия {0})"
+msgstr "the shell extension matches the program (version {0})"
+
+msgid "расширение оболочки установить не вышло; поставьте вручную: glyphstroke shell-extension install"
+msgstr "could not install the shell extension; install it by hand: glyphstroke shell-extension install"
+
+msgid "расширение оболочки установлено"
+msgstr "the shell extension is installed"
+
+msgid "расширение оболочки установлено; чтобы след и мишень заработали, перезайдите в систему"
+msgstr "the shell extension has been installed; log in again so that the trail and the target start working"
+
+msgid "расширение удалено: {0}"
+msgstr "the extension has been removed: {0}"
+
+msgid "расширение установлено: {0}"
+msgstr "the extension has been installed: {0}"
+
+msgid "регулярное выражение по «класс окна | заголовок»"
+msgstr "regular expression over «window class | title»"
+
+msgid "редактор жестов"
+msgstr "the gesture editor"
+
+msgid "росчерк"
+msgstr "stroke"
+
+msgid "росчерки сохраняю в {0}"
+msgstr "saving the strokes into {0}"
+
+msgid "сбой при выполнении особого жеста"
+msgstr "the special gesture failed"
+
+msgid "сбой при выполнении пункта меню"
+msgstr "the menu item failed"
+
+msgid "сбой при разборе росчерка"
+msgstr "the stroke could not be processed"
+
+msgid "сессия: {0}, DISPLAY={1}, WAYLAND_DISPLAY={2}"
+msgstr "session: {0}, DISPLAY={1}, WAYLAND_DISPLAY={2}"
+
+msgid "символ %r не набирается через uinput, пропущен"
+msgstr "the character %r cannot be typed through uinput, skipped"
+
+msgid "сколько раз рисовать"
+msgstr "how many times to draw it"
+
+msgid "след за курсором в GNOME на Wayland"
+msgstr "the trail behind the cursor in GNOME on Wayland"
+
+msgid "след не рисуем: в сеансе Wayland нет глобальной позиции курсора"
+msgstr "not drawing the trail: a Wayland session gives no global cursor position"
+
+msgid "след не рисуем: графической сессии не видно"
+msgstr "not drawing the trail: no graphical session in sight"
+
+msgid "след не рисуется: в Wayland нет глобальной позиции курсора"
+msgstr "the trail is not drawn: Wayland gives no global cursor position"
+
+msgid "след не рисуется: нет GTK 3 ({0})"
+msgstr "the trail is not drawn: no GTK 3 ({0})"
+
+msgid "след не рисуется: нет доступа к дисплею"
+msgstr "the trail is not drawn: no access to the display"
+
+msgid "след не рисуется: сеанс Wayland"
+msgstr "the trail is not drawn: this is a Wayland session"
+
+msgid "следствие пункта выше"
+msgstr "a consequence of the item above"
+
+msgid "служба включена: {0}"
+msgstr "the service is enabled: {0}"
+
+msgid "не удалось включить службу: {0}"
+msgstr "could not enable the service: {0}"
+
+msgid "служба выключена"
+msgstr "the service is disabled"
+
+msgid "служба запущена обратно"
+msgstr "the service is running again"
+
+msgid "служба перезапущена"
+msgstr "the service has been restarted"
+
+msgid "слушать только одну мышь"
+msgstr "listen to a single mouse"
+
+msgid "сначала убрать все прежние жесты"
+msgstr "remove every previous gesture first"
+
+msgid "снять привязку"
+msgstr "clear the binding"
+
+msgid "создать настройки и стартовый набор жестов"
+msgstr "create the settings and the starter set of gestures"
+
+msgid "состояние: {0}"
+msgstr "state: {0}"
+
+msgid "сохранено: {0}"
+msgstr "saved: {0}"
+
+msgid "сохранять росчерки в файлы — их можно разобрать позже"
+msgstr "save the strokes into files — they can be examined later"
+
+msgid "список жестов"
+msgstr "the list of gestures"
+
+msgid "список исключений"
+msgstr "the exclusion list"
+
+msgid "справка о возможностях"
+msgstr "help on what it can do"
+
+msgid "сразу переключиться на заведённый набор"
+msgstr "switch to the new set right away"
+
+msgid "страница загрузки: {0}"
+msgstr "download page: {0}"
+
+msgid "тачпад"
+msgstr "touchpad"
+
+msgid "тачпад для рисования: %s (%s)"
+msgstr "touchpad for drawing: %s (%s)"
+
+msgid "текущий набор: {0}"
+msgstr "current set: {0}"
+
+msgid "текущий набор: {0} (жестов: {1})"
+msgstr "current set: {0} (gestures: {1})"
+
+msgid "у жеста «%s» есть меню, но рисовать его некому: поставьте расширение оболочки командой «glyphstroke shell-extension install»"
+msgstr "gesture «%s» has a menu, but there is nobody to draw it: install the shell extension with «glyphstroke shell-extension install»"
+
+msgid "у набора должно быть название"
+msgstr "the set must have a name"
+
+msgid "у окна нет класса — такое приложение не запомнить"
+msgstr "the window has no class — such an application cannot be remembered"
+
+msgid "удалено прежних {0}"
+msgstr "removed {0} previous"
+
+msgid "установлено: {0}"
+msgstr "installed: {0}"
+
+msgid "устройство отключено: %s"
+msgstr "device disconnected: %s"
+
+msgid "файл не содержал жестов"
+msgstr "the file contained no gestures"
+
+msgid "файл сделан более новой версией программы"
+msgstr "the file was made by a newer version"
+
+msgid "файла нет: {0}"
+msgstr "no such file: {0}"
+
+msgid "часть названия раздела"
+msgstr "part of a section title"
+
+msgid "чтение /dev/input/event*"
+msgstr "reading /dev/input/event*"
+
+msgid "что распознаёт работающий демон"
+msgstr "what the running daemon recognises"
+
+msgid "щёлкнуть левой"
+msgstr "click the left button"
+
+msgid "щёлкнуть правой при зажатой левой"
+msgstr "click the right button while holding the left one"
+
+msgid "щёлкнуть средней"
+msgstr "click the middle button"
+
+msgid "это не файл с жестами glyphstroke"
+msgstr "this is not a glyphstroke gesture file"

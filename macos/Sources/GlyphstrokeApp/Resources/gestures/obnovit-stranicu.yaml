@@ -1,0 +1,11 @@
+name: Reload the page
+enabled: true
+description: |
+  Stroke up and to the right. On a Mac reload is cmd+r; browsers have no F5 key.
+event: ''
+directions: [U-R]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: cmd+r}
+templates: []

@@ -1,0 +1,10 @@
+name: Forward
+enabled: true
+description: Stroke right — "forward"
+event: ''
+directions: [R]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: cmd+bracketright}
+templates: []

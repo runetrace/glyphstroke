@@ -1,0 +1,10 @@
+name: Reload the page
+enabled: true
+description: Stroke up and to the right
+event: ""
+directions: [U-R]
+apps: []
+rotation_tolerance: 20
+actions:
+  - {type: "standard", value: "refresh"}
+templates: []

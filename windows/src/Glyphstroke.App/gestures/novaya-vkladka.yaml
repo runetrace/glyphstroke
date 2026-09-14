@@ -1,0 +1,10 @@
+name: New tab
+enabled: true
+description: Stroke up
+event: ""
+directions: [U]
+apps: []
+rotation_tolerance: 20
+actions:
+  - {type: "standard", value: "new-tab"}
+templates: []

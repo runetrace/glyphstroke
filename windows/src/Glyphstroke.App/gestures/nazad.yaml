@@ -1,0 +1,10 @@
+name: Back
+enabled: true
+description: Stroke left — "back" in the browser and Explorer
+event: ""
+directions: [L]
+apps: []
+rotation_tolerance: 20
+actions:
+  - {type: "standard", value: "back"}
+templates: []

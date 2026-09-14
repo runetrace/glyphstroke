@@ -1,0 +1,9 @@
+name: Новая вкладка
+enabled: true
+description: Росчерк вверх
+directions: [U]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: ctrl+t}
+templates: []

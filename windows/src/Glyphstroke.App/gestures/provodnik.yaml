@@ -1,0 +1,12 @@
+name: File Explorer
+enabled: false
+description: |
+  Stroke down-left opens File Explorer. Off by default: replace it with
+  whatever you open most often.
+event: ""
+directions: [D-L]
+apps: []
+rotation_tolerance: 20
+actions:
+  - {type: "app", value: "explorer.exe"}
+templates: []

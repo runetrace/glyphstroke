@@ -1,0 +1,10 @@
+name: Back
+enabled: true
+description: Stroke left — "back" in the browser and Finder
+event: ''
+directions: [L]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: cmd+bracketleft}
+templates: []

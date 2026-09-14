@@ -1,0 +1,12 @@
+name: Minimise the window
+enabled: true
+description: |
+  Stroke left-down. Minimises the active window through Accessibility —
+  this works even where there is no cmd+m shortcut.
+event: ''
+directions: [L-D]
+apps: []
+rotation_tolerance: 20.0
+actions:
+  - {type: window, value: minimize}
+templates: []

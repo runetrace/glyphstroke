@@ -1,0 +1,11 @@
+name: Обновить страницу
+enabled: false
+description: |
+  Пример жеста для одного приложения: срабатывает только в браузерах.
+  Фильтр apps сверяется с «класс окна | заголовок» активного окна.
+directions: [U-R]
+apps: ['firefox', 'chrom', 'yandex']
+rotation_tolerance: 20.0
+actions:
+  - {type: keys, value: F5}
+templates: []

@@ -1,0 +1,9 @@
+name: Следующая вкладка (колесо)
+enabled: false
+description: |
+  Крутить колесо, удерживая правую кнопку. Прокрутка страницы при этом не
+  происходит — событие колеса забирает себе жест.
+event: wheel-down
+apps: []
+actions:
+  - {type: keys, value: ctrl+Page_Down}
