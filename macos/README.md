@@ -43,16 +43,25 @@ for example `D-R` — "down, then right".
 - actions: standard ones from a list (copy, paste, minimise the window and so
   on), keys, text, launching programs, commands, clicks, scrolling, window
   actions;
-- a gesture editor with sample drawing;
-- settings: the modifier button, the stroke threshold, the trail look, autostart;
+- a gesture editor with sample drawing, split into the "Stroke", "Actions" and
+  "Menu" tabs;
+- a menu under a gesture: give it items and it opens a menu at the cursor
+  instead of running its own actions;
+- gesture sets: separate folders you switch between right in the editor;
+- a target button: point at a window and its app lands in the gesture's
+  conditions;
+- settings: the modifier button, the stroke threshold, the trail look,
+  autostart, theme and language;
+- help inside the program;
 - an update check once a day;
 - a menu-bar icon with pause and the log.
 
 ## Where settings live
 
-Files are in `~/Library/Application Support/Glyphstroke/`: `settings.yaml` and the
-`gestures/` folder. The format is shared with the Linux and Windows versions — a
-gesture set moves by copying the folder.
+Files are in `~/Library/Application Support/Glyphstroke/`: `settings.yaml`, the
+`gestures/` folder with the main set and the `profiles/` folder with the rest.
+The format is shared with the Linux and Windows versions — gestures move by
+copying the folder.
 
 ## Build
 

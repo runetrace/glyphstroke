@@ -127,6 +127,23 @@ public final class GestureEngine: MouseTapDelegate {
         }
 
         log("жест «\(gesture.name)» (\(match.code), \(percent(match.score)))")
+
+        if !gesture.menu.isEmpty {
+            // Есть пункты — вместо своих действий жест открывает меню у курсора.
+            let items = gesture.menu
+            let timeout = settings.menuTimeoutMs
+            let runner = actions
+            // Меню крутит собственный цикл событий, поэтому показываем его
+            // следующим шагом: сначала перехват должен отпустить обработку
+            // щелчка, иначе мышь замрёт до закрытия меню.
+            DispatchQueue.main.async {
+                GestureMenu.show(items: items, timeoutMs: timeout) { list in
+                    runner.run(list)
+                }
+            }
+            return true
+        }
+
         actions.run(gesture.actions)
         return true
     }

@@ -16,6 +16,10 @@ final class AppModel: ObservableObject {
     private weak var engine: GestureEngine?
 
     @Published var gestures: [Gesture] = []
+    /// Заведённые наборы, кроме основного. Держим списком, а не читаем каталог
+    /// на каждую перерисовку: строка набора рисуется часто, обращение к диску
+    /// в такой дороге лишнее.
+    @Published var profiles: [String] = []
     @Published var settings: Settings
     @Published var selectedID: String?
     /// Последнее сообщение о неудаче — показывается в редакторе полоской.
@@ -33,11 +37,51 @@ final class AppModel: ObservableObject {
     }
 
     func reload() {
-        gestures = store.loadGestures()
+        // Настройки первыми: в них лежит выбранный набор, а от него зависит,
+        // из какой папки читаются жесты.
         settings = store.loadSettings()
+        gestures = store.loadGestures()
+        profiles = store.availableProfiles()
         if selectedID == nil || !gestures.contains(where: { $0.id == selectedID }) {
             selectedID = gestures.first?.id
         }
+    }
+
+    // MARK: - Наборы жестов
+
+    /// Выбранный набор; пустая строка — основной.
+    var activeProfile: String { settings.activeProfile }
+
+    func switchProfile(to name: String) {
+        settings.activeProfile = name
+        do {
+            try store.saveSettings(settings)
+            try store.prepareDirectories()
+            problem = nil
+        } catch {
+            // Выбор набора записать не удалось — жесты всё равно перечитаем,
+            // иначе редактор показывал бы чужой список.
+            store.activeProfile = name
+            problem = "\(tr("Не удалось сохранить настройки:")) \(error.localizedDescription)"
+        }
+        selectedID = nil
+        reload()
+        engine?.reload()
+    }
+
+    /// Новый набор создаётся копией текущего: начинать с пустого списка человек
+    /// обычно не хочет — он заводит набор, чтобы поменять пару жестов.
+    func addProfile(named name: String) {
+        let created = store.createProfile(name, copyFrom: settings.activeProfile)
+        guard !created.isEmpty else { return }
+        switchProfile(to: created)
+    }
+
+    func removeActiveProfile() {
+        let name = settings.activeProfile
+        guard !name.isEmpty else { return }
+        store.removeProfile(name)
+        switchProfile(to: "")
     }
 
     // MARK: - Жесты

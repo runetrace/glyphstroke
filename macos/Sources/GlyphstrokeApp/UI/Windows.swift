@@ -12,6 +12,7 @@ final class Windows {
     private var editor: NSWindow?
     private var settings: NSWindow?
     private var onboarding: NSWindow?
+    private var help: NSWindow?
 
     private let model: AppModel
 
@@ -30,6 +31,12 @@ final class Windows {
         present(&settings, title: tr("Glyphstroke — настройки"),
                 size: NSSize(width: 560, height: 640),
                 view: SettingsView(model: model))
+    }
+
+    func showHelp() {
+        present(&help, title: tr("Glyphstroke — справка"),
+                size: NSSize(width: 760, height: 560),
+                view: HelpView())
     }
 
     func showOnboarding() {

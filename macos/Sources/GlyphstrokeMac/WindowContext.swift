@@ -65,6 +65,48 @@ public enum WindowContext {
         return titleRef as? String
     }
 
+    // MARK: - Окно под курсором
+
+    /// Какому приложению принадлежит окно под курсором.
+    ///
+    /// Нужно кнопке-мишени в редакторе: человеку не приходится знать
+    /// идентификатор пакета заранее — он показывает нужное окно пальцем.
+    /// Список окон система отдаёт без Универсального доступа, поэтому мишень
+    /// работает даже до выдачи разрешений.
+    public static func appUnderCursor(excluding pid: pid_t = 0) -> String? {
+        // Положение курсора берём у CoreGraphics: оно сразу в тех координатах,
+        // в которых система перечисляет окна, — начало в левом верхнем углу.
+        // Cocoa считает от левого нижнего, и пересчёт на многомониторной
+        // раскладке ошибается ровно на высоту не того экрана.
+        guard let point = CGEvent(source: nil)?.location else { return nil }
+        return app(at: point, excluding: pid)
+    }
+
+    public static func app(at point: CGPoint, excluding pid: pid_t) -> String? {
+        let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
+        guard let list = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
+            return nil
+        }
+        // Список идёт сверху вниз по слоям, поэтому первое подходящее окно —
+        // это и есть то, что человек видит под курсором.
+        for info in list {
+            guard let layer = info[kCGWindowLayer as String] as? Int, layer == 0,
+                  let owner = info[kCGWindowOwnerPID as String] as? pid_t, owner != pid,
+                  let raw = info[kCGWindowBounds as String] as? NSDictionary,
+                  let bounds = CGRect(dictionaryRepresentation: raw),
+                  bounds.contains(point) else {
+                continue
+            }
+            if let app = NSRunningApplication(processIdentifier: owner),
+               let identifier = app.bundleIdentifier ?? app.localizedName,
+               !identifier.isEmpty {
+                return identifier
+            }
+            return info[kCGWindowOwnerName as String] as? String
+        }
+        return nil
+    }
+
     /// Развёрнуто ли активное окно во весь экран — для настройки
     /// «отключаться в полноэкранных».
     public static func isFrontmostFullscreen() -> Bool {

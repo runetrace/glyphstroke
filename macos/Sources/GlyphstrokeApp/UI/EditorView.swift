@@ -11,6 +11,10 @@ import GlyphstrokeCore
 struct EditorView: View {
     @ObservedObject var model: AppModel
 
+    @State private var newProfileName = ""
+    @State private var askingProfileName = false
+    @State private var confirmingProfileRemoval = false
+
     var body: some View {
         NavigationSplitView {
             List(selection: $model.selectedID) {
@@ -24,6 +28,27 @@ struct EditorView: View {
                 }
             }
             .frame(minWidth: 240)
+            .safeAreaInset(edge: .top) {
+                ProfileBar(model: model,
+                           askingName: $askingProfileName,
+                           confirmingRemoval: $confirmingProfileRemoval)
+            }
+            .alert(tr("Новый набор жестов"), isPresented: $askingProfileName) {
+                TextField(tr("Название набора"), text: $newProfileName)
+                Button(tr("Отмена"), role: .cancel) { newProfileName = "" }
+                Button(tr("Завести")) {
+                    let name = newProfileName.trimmingCharacters(in: .whitespaces)
+                    newProfileName = ""
+                    guard !name.isEmpty else { return }
+                    model.addProfile(named: name)
+                }
+            }
+            .alert(tr("Удалить набор?"), isPresented: $confirmingProfileRemoval) {
+                Button(tr("Отмена"), role: .cancel) {}
+                Button(tr("Удалить"), role: .destructive) { model.removeActiveProfile() }
+            } message: {
+                Text(tr("Жесты этого набора удалятся вместе с ним. Основной набор не тронется."))
+            }
             .safeAreaInset(edge: .bottom) {
                 HStack {
                     Button {
@@ -121,6 +146,7 @@ struct GestureDetailView: View {
     @State private var saveTask: Task<Void, Never>?
     @State private var directionsText: String
     @State private var appsText: String
+    @State private var tab: Tab = .shape
 
     init(model: AppModel, gesture: Gesture) {
         self.model = model
@@ -130,6 +156,56 @@ struct GestureDetailView: View {
     }
 
     var body: some View {
+        VStack(spacing: 0) {
+            // Вкладки Росчерк / Действия / Меню — как в версиях для Linux и
+            // Windows. Здесь это сегментированный переключатель: на маке
+            // подчёркнутые вкладки внутри окна выглядят чужими, а деление
+            // страницы то же самое.
+            Picker("", selection: $tab) {
+                ForEach(Tab.allCases, id: \.self) { item in
+                    Text(item.title).tag(item)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+
+            switch tab {
+            case .shape: shapePage
+            case .actions: actionsPage
+            case .menu: menuPage
+            }
+        }
+        .onChange(of: draft) { _ in scheduleSave() }
+        .onChange(of: directionsText) { text in
+            draft.directions = text
+                .split(whereSeparator: { $0 == "," || $0 == " " })
+                .map { $0.trimmingCharacters(in: .whitespaces).uppercased() }
+                .filter { !$0.isEmpty }
+        }
+        .onChange(of: appsText) { text in
+            draft.apps = text.split(separator: "\n")
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty }
+        }
+    }
+
+    // MARK: - Вкладки
+
+    enum Tab: String, CaseIterable {
+        case shape, actions, menu
+
+        var title: String {
+            switch self {
+            case .shape: return tr("Росчерк")
+            case .actions: return tr("Действия")
+            case .menu: return tr("Меню")
+            }
+        }
+    }
+
+    private var shapePage: some View {
         Form {
             Section(tr("Жест")) {
                 TextField(tr("Название"), text: $draft.name)
@@ -154,13 +230,11 @@ struct GestureDetailView: View {
                 }
             }
 
-            Section(tr("Действия")) {
-                ActionsEditor(actions: $draft.actions)
-            }
-
             Section(tr("Где работает")) {
                 TextField(tr("Программы"), text: $appsText, axis: .vertical)
                     .lineLimit(2...6)
+                Button(tr("Выбрать окно…")) { pickWindow() }
+                    .help(tr("Нажмите и щёлкните по нужному окну"))
                 Text(tr("Пусто — жест работает везде. По строке на программу: ")
                      + tr("«class:com.apple.Safari» — точное совпадение, иначе строка понимается ")
                      + tr("как выражение и ищется в «программа | заголовок окна». Имя программы ")
@@ -184,17 +258,45 @@ struct GestureDetailView: View {
             }
         }
         .formStyle(.grouped)
-        .onChange(of: draft) { _ in scheduleSave() }
-        .onChange(of: directionsText) { text in
-            draft.directions = text
-                .split(whereSeparator: { $0 == "," || $0 == " " })
-                .map { $0.trimmingCharacters(in: .whitespaces).uppercased() }
-                .filter { !$0.isEmpty }
+    }
+
+    private var actionsPage: some View {
+        Form {
+            Section(tr("Действия")) {
+                ActionsEditor(actions: $draft.actions)
+            }
         }
-        .onChange(of: appsText) { text in
-            draft.apps = text.split(separator: "\n")
+        .formStyle(.grouped)
+    }
+
+    private var menuPage: some View {
+        Form {
+            Section(tr("Меню")) {
+                Text(tr("Если есть пункты, жест открывает меню у курсора: выберите пункт — ")
+                     + tr("выполнятся его действия. Без пунктов жест просто делает свои действия."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                MenuEditor(menu: $draft.menu)
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    /// Подставить программу под курсором строкой «class:…».
+    ///
+    /// Правим текстовое поле, а не сразу список: человек видит добавленную
+    /// строку там же, где правит остальные, и может её стереть тем же способом.
+    private func pickWindow() {
+        WindowPicker.pick { name in
+            guard let name, !name.isEmpty else { return }
+            let line = "class:\(name)"
+            var lines = appsText
+                .split(separator: "\n")
                 .map { $0.trimmingCharacters(in: .whitespaces) }
                 .filter { !$0.isEmpty }
+            guard !lines.contains(line) else { return }
+            lines.append(line)
+            appsText = lines.joined(separator: "\n")
         }
     }
 
@@ -300,6 +402,93 @@ struct ActionsEditor: View {
         case "scroll": return tr("up 3")
         case "delay": return tr("200")
         default: return ""
+        }
+    }
+}
+
+/// Строка набора жестов над списком.
+///
+/// Набор — это отдельная папка жестов. Держим его здесь, а не в настройках:
+/// переключают набор ровно тогда, когда смотрят на список жестов, и уходить за
+/// этим в другое окно было бы странно.
+private struct ProfileBar: View {
+    @ObservedObject var model: AppModel
+    @Binding var askingName: Bool
+    @Binding var confirmingRemoval: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Picker("", selection: selection) {
+                Text(tr("Основной")).tag("")
+                ForEach(model.profiles, id: \.self) { name in
+                    Text(name).tag(name)
+                }
+            }
+            .labelsHidden()
+
+            Button {
+                askingName = true
+            } label: {
+                Image(systemName: "plus")
+            }
+            .buttonStyle(.borderless)
+            .help(tr("Новый набор жестов"))
+
+            Button {
+                confirmingRemoval = true
+            } label: {
+                Image(systemName: "minus")
+            }
+            .buttonStyle(.borderless)
+            .disabled(model.activeProfile.isEmpty)
+            .help(tr("Удалить набор"))
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+    }
+
+    /// Выбор набора сразу перечитывает жесты, поэтому связка своя, а не прямая
+    /// на настройку: иначе список остался бы от прежнего набора.
+    private var selection: Binding<String> {
+        Binding(get: { model.activeProfile },
+                set: { name in
+                    guard name != model.activeProfile else { return }
+                    model.switchProfile(to: name)
+                })
+    }
+}
+
+/// Пункты меню жеста: у каждого своё название и свои действия.
+struct MenuEditor: View {
+    @Binding var menu: [MenuItem]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(menu.indices, id: \.self) { index in
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        TextField(tr("Название пункта"), text: $menu[index].name)
+                        Button {
+                            menu.remove(at: index)
+                        } label: {
+                            Image(systemName: "minus.circle")
+                        }
+                        .buttonStyle(.borderless)
+                        .help(tr("Убрать пункт"))
+                    }
+                    ActionsEditor(actions: $menu[index].actions)
+                }
+                .padding(12)
+                .background(Color.secondary.opacity(0.08),
+                            in: RoundedRectangle(cornerRadius: 8))
+            }
+
+            Button {
+                menu.append(MenuItem(name: tr("Пункт")))
+            } label: {
+                Label(tr("Добавить пункт"), systemImage: "plus")
+            }
+            .buttonStyle(.borderless)
         }
     }
 }

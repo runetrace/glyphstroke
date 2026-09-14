@@ -232,6 +232,34 @@ enum L {
         "Автозапуск не изменился:": "Autostart did not change:",
         "пикс.": "px",
         "мс": "ms",
+        // справка
+        "Glyphstroke — справка": "Glyphstroke — Help",
+        "Справка…": "Help…",
+        // наборы жестов
+        "Основной": "Main",
+        "Новый набор жестов": "New gesture set",
+        "Название набора": "Set name",
+        "Завести": "Create",
+        "Отмена": "Cancel",
+        "Удалить набор": "Delete the set",
+        "Удалить набор?": "Delete the set?",
+        "Жесты этого набора удалятся вместе с ним. Основной набор не тронется.":
+            "The gestures of this set go with it. The main set is left alone.",
+        // вкладки редактора
+        "Росчерк": "Stroke",
+        "Меню": "Menu",
+        // меню под жестом
+        "Пункт": "Item",
+        "Название пункта": "Item name",
+        "Добавить пункт": "Add an item",
+        "Убрать пункт": "Remove the item",
+        "Если есть пункты, жест открывает меню у курсора: выберите пункт — ":
+            "With items, the gesture opens a menu at the cursor: pick an item and ",
+        "выполнятся его действия. Без пунктов жест просто делает свои действия.":
+            "its actions run. Without items the gesture simply runs its own actions.",
+        // мишень окна
+        "Выбрать окно…": "Pick a window…",
+        "Нажмите и щёлкните по нужному окну": "Press it, then click the window you mean",
     ]
 }
 

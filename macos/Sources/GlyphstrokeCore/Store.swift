@@ -32,10 +32,75 @@ public final class Store {
     }
 
     public var settingsURL: URL { root.appendingPathComponent("settings.yaml") }
-    public var gesturesDirectory: URL { root.appendingPathComponent("gestures", isDirectory: true) }
+
+    /// Текущий набор жестов: пусто — основной (каталог `gestures/`), иначе имя
+    /// набора из `profiles/`. Раскладка общая с версиями для Linux и Windows,
+    /// чтобы каталог настроек переносился между системами целиком.
+    public var activeProfile: String = ""
+
+    public var profilesDirectory: URL { root.appendingPathComponent("profiles", isDirectory: true) }
+
+    public var gesturesDirectory: URL {
+        let name = Store.cleanProfileName(activeProfile)
+        return name.isEmpty
+            ? root.appendingPathComponent("gestures", isDirectory: true)
+            : profilesDirectory.appendingPathComponent(name, isDirectory: true)
+    }
 
     public func prepareDirectories() throws {
         try FileManager.default.createDirectory(at: gesturesDirectory, withIntermediateDirectories: true)
+    }
+
+    // MARK: - Наборы жестов
+
+    /// Имя набора без символов, недопустимых в имени папки.
+    public static func cleanProfileName(_ name: String?) -> String {
+        let forbidden = CharacterSet(charactersIn: "/\\:")
+        let kept = (name ?? "").unicodeScalars.filter { !forbidden.contains($0) }
+        return String(String.UnicodeScalarView(kept)).trimmingCharacters(in: .whitespaces)
+    }
+
+    /// Имена заведённых наборов (без основного), по алфавиту.
+    public func availableProfiles() -> [String] {
+        let urls = (try? FileManager.default.contentsOfDirectory(
+            at: profilesDirectory, includingPropertiesForKeys: [.isDirectoryKey])) ?? []
+        return urls
+            .filter { (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true }
+            .map { $0.lastPathComponent }
+            .filter { !$0.isEmpty }
+            .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+
+    /// Завести набор. `copyFrom` — откуда скопировать жесты: пустая строка это
+    /// основной набор, `nil` — не копировать ничего.
+    @discardableResult
+    public func createProfile(_ name: String, copyFrom: String? = nil) -> String {
+        let clean = Store.cleanProfileName(name)
+        guard !clean.isEmpty else { return "" }
+        let target = profilesDirectory.appendingPathComponent(clean, isDirectory: true)
+        try? FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
+
+        if let copyFrom {
+            let sourceName = Store.cleanProfileName(copyFrom)
+            let source = sourceName.isEmpty
+                ? root.appendingPathComponent("gestures", isDirectory: true)
+                : profilesDirectory.appendingPathComponent(sourceName, isDirectory: true)
+            let urls = (try? FileManager.default.contentsOfDirectory(
+                at: source, includingPropertiesForKeys: nil)) ?? []
+            for file in urls where ["yaml", "yml"].contains(file.pathExtension.lowercased()) {
+                let copy = target.appendingPathComponent(file.lastPathComponent)
+                try? FileManager.default.removeItem(at: copy)
+                try? FileManager.default.copyItem(at: file, to: copy)
+            }
+        }
+        return clean
+    }
+
+    public func removeProfile(_ name: String) {
+        let clean = Store.cleanProfileName(name)
+        guard !clean.isEmpty else { return }
+        try? FileManager.default.removeItem(
+            at: profilesDirectory.appendingPathComponent(clean, isDirectory: true))
     }
 
     // MARK: - Настройки
@@ -74,10 +139,14 @@ public final class Store {
         }
 
         settingsExtras = raw.filter { !Store.knownSettingsKeys.contains($0.key) }
+        // Каталог жестов зависит от набора, поэтому выбор из файла применяем
+        // сразу: иначе редактор и перехват читали бы разные папки.
+        activeProfile = settings.activeProfile
         return settings
     }
 
     public func saveSettings(_ settings: Settings) throws {
+        activeProfile = settings.activeProfile
         try prepareDirectories()
         var raw: [String: Any] = settingsExtras
         raw["language"] = settings.language

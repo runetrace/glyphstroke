@@ -127,6 +127,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         logItem.target = self
         menu.addItem(logItem)
 
+        let helpItem = NSMenuItem(title: tr("Справка…"), action: #selector(showHelp), keyEquivalent: "?")
+        helpItem.target = self
+        menu.addItem(helpItem)
+
         if !Permissions.allGranted {
             let permissions = NSMenuItem(title: tr("Выдать разрешения…"), action: #selector(showOnboarding), keyEquivalent: "")
             permissions.target = self
@@ -162,6 +166,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func showEditor() {
         windows.showEditor()
+    }
+
+    @objc private func showHelp() {
+        windows.showHelp()
     }
 
     @objc private func showSettings() {
