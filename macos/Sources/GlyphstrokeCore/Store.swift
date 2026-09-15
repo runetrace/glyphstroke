@@ -233,8 +233,11 @@ public final class Store {
     @discardableResult
     public func save(_ gesture: Gesture) throws -> URL {
         try prepareDirectories()
-        let url = gesture.fileURL
-            ?? gesturesDirectory.appendingPathComponent(Store.slug(gesture.name) + ".yaml")
+        // Для нового жеста берём СВОБОДНОЕ имя файла. Иначе два разных жеста с
+        // одинаковым слагом имени (переименовали первый «Новый жест», слаг
+        // освободился, добавили второй) писались бы в один файл — второй молча
+        // затирал первый. Проверяем существование на диске, а не только имя.
+        let url = gesture.fileURL ?? uniqueGestureURL(for: gesture.name)
 
         var raw: [String: Any] = [
             "name": gesture.name,
@@ -318,6 +321,18 @@ public final class Store {
     }
 
     /// Имя файла из названия жеста: буквы и цифры любых языков, остальное — дефис.
+    /// Путь под новый жест, не совпадающий с уже существующим файлом.
+    private func uniqueGestureURL(for name: String) -> URL {
+        let slug = Store.slug(name)
+        var candidate = gesturesDirectory.appendingPathComponent(slug + ".yaml")
+        var counter = 2
+        while FileManager.default.fileExists(atPath: candidate.path) {
+            candidate = gesturesDirectory.appendingPathComponent("\(slug)-\(counter).yaml")
+            counter += 1
+        }
+        return candidate
+    }
+
     public static func slug(_ name: String) -> String {
         let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: ".-_"))
         let scalars = name.trimmingCharacters(in: .whitespaces).unicodeScalars.map {

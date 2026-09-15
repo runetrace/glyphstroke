@@ -112,6 +112,26 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(read.menu.first?.actions.first?.value, "copy")
     }
 
+    func testNewGestureNeverOverwritesAnExistingFile() throws {
+        // Баг: добавили «Новый жест», переименовали его (слаг имени освободился),
+        // добавили второй «Новый жест» — он писался в тот же файл и молча затирал
+        // первый. Новый жест обязан получить свободное имя файла.
+        let store = makeStore()
+        try store.prepareDirectories()
+
+        var first = Gesture(name: "Новый жест")
+        let firstURL = try store.save(first)
+        first.fileURL = firstURL
+        first.name = "Разворот"
+        _ = try store.save(first) // тот же файл (fileURL задан), просто переименование
+
+        let secondURL = try store.save(Gesture(name: "Новый жест"))
+
+        XCTAssertNotEqual(firstURL, secondURL)
+        XCTAssertEqual(store.loadGestures().map(\.name).sorted(),
+                       ["Новый жест", "Разворот"].sorted())
+    }
+
     func testGestureWithoutAMenuKeepsNoMenuKey() throws {
         let store = makeStore()
         try store.prepareDirectories()
