@@ -159,6 +159,29 @@ public class StoreTests : IDisposable
     }
 
     [Fact]
+    public void NewGestureNeverOverwritesAnExistingFile()
+    {
+        // Баг: добавили жест «Новый жест», переименовали его (слаг имени
+        // освободился), добавили второй «Новый жест» — он писался в тот же файл
+        // и молча затирал первый. Новый жест обязан получить свободное имя файла.
+        var store = NewStore();
+
+        var first = new Gesture { Name = "Новый жест" };
+        store.Save(first);
+        first.Name = "Разворот";
+        store.Save(first); // тот же файл (FilePath уже задан), просто переименование
+
+        var second = new Gesture { Name = "Новый жест" };
+        store.Save(second);
+
+        Assert.NotEqual(first.FilePath, second.FilePath);
+        var names = store.LoadGestures().Select(gesture => gesture.Name).ToList();
+        Assert.Equal(2, names.Count);
+        Assert.Contains("Разворот", names);
+        Assert.Contains("Новый жест", names);
+    }
+
+    [Fact]
     public void SlugKeepsLettersAndLowersThem()
     {
         Assert.Equal("новая-вкладка", Store.Slug("Новая вкладка"));

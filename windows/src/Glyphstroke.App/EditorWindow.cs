@@ -33,7 +33,7 @@ public sealed class EditorWindow : Window
     private readonly TextBox _description = new();
     private readonly CheckBox _enabled = new() { Content = L.Tr("Включён") };
     private readonly TextBox _directions = new();
-    private readonly TextBox _apps = new() { AcceptsReturn = true, Height = 60, TextWrapping = TextWrapping.Wrap };
+    private AppListEditor _appsEditor = null!;
     private readonly Slider _tolerance = new() { Minimum = 0, Maximum = 45, TickFrequency = 1, IsSnapToTickEnabled = true };
     private readonly TextBlock _toleranceLabel = new();
     private readonly StackPanel _actions = new();
@@ -67,6 +67,7 @@ public sealed class EditorWindow : Window
         _canvas.SetResourceReference(Panel.BackgroundProperty, "RcField");
         _canvasHint.SetResourceReference(TextBlock.ForegroundProperty, "RcMuted");
         SourceInitialized += (_, _) => Theme.ApplyWindowChrome(this);
+        _appsEditor = new AppListEditor(ScheduleSave, L.Tr("Пусто — жест работает во всех программах."));
         Content = BuildLayout();
         HookChanges();
     }
@@ -183,12 +184,9 @@ public sealed class EditorWindow : Window
         _tolerance.Width = 200;
         toleranceRow.Children.Add(_tolerance);
         toleranceRow.Children.Add(_toleranceLabel);
-        var appsPicker = WindowPicker.Target(_apps);
-        appsPicker.Margin = new Thickness(0, 6, 0, 0);
-        appsPicker.HorizontalAlignment = HorizontalAlignment.Left;
         var whereCard = Theme.Card(L.Tr("Где работает"),
-            Row(L.Tr("Только в программах"), _apps),
-            appsPicker,
+            Theme.Themed(new TextBlock { Text = L.Tr("Только в программах:"), Margin = new Thickness(0, 0, 0, 2) }, "RcText"),
+            _appsEditor.Panel,
             appsNote,
             toleranceRow);
 
@@ -228,7 +226,6 @@ public sealed class EditorWindow : Window
         _name.TextChanged += (_, _) => ScheduleSave();
         _description.TextChanged += (_, _) => ScheduleSave();
         _directions.TextChanged += (_, _) => { UpdateWarning(); ScheduleSave(); };
-        _apps.TextChanged += (_, _) => ScheduleSave();
         _enabled.Checked += (_, _) => ScheduleSave();
         _enabled.Unchecked += (_, _) => ScheduleSave();
         _tolerance.ValueChanged += (_, _) =>
@@ -284,11 +281,11 @@ public sealed class EditorWindow : Window
         _description.Text = _current.Description;
         _enabled.IsChecked = _current.Enabled;
         _directions.Text = string.Join(", ", _current.Directions);
-        _apps.Text = string.Join(Environment.NewLine, _current.Apps);
         _tolerance.Value = _current.RotationTolerance;
         _toleranceLabel.Text = $"  {(int)_current.RotationTolerance}°";
         _filling = false;
 
+        _appsEditor.Load(_current.Apps);
         FillActions();
         FillMenu();
         UpdateTemplatesLabel();
@@ -626,11 +623,6 @@ public sealed class EditorWindow : Window
         gesture.Directions = _directions.Text
             .Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
             .Select(part => part.Trim().ToUpperInvariant())
-            .Where(part => part.Length > 0)
-            .ToList();
-        gesture.Apps = _apps.Text
-            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-            .Select(part => part.Trim())
             .Where(part => part.Length > 0)
             .ToList();
         gesture.RotationTolerance = Math.Round(_tolerance.Value);

@@ -281,8 +281,12 @@ public sealed class Store
     public string Save(Gesture gesture)
     {
         PrepareDirectories();
-        string path = gesture.FilePath
-            ?? Path.Combine(GesturesDirectory, Slug(gesture.Name) + ".yaml");
+        // Для нового жеста берём СВОБОДНОЕ имя файла. Иначе два разных жеста с
+        // одинаковым слагом имени (например, переименовали первый «Новый жест»,
+        // освободив слаг, и добавили второй) писались бы в один файл — второй
+        // молча затирал первый. Проверяем существование на диске, а не только
+        // имя в памяти.
+        string path = gesture.FilePath ?? UniqueGesturePath(gesture.Name);
 
         var text = new StringBuilder();
         text.AppendLine($"name: {Quote(gesture.Name)}");
@@ -402,6 +406,19 @@ public sealed class Store
             p.Y.ToString("0.0", CultureInfo.InvariantCulture)));
 
     /// <summary>Имя файла из названия жеста: буквы и цифры, остальное — дефис.</summary>
+    /// <summary>Путь под новый жест, не совпадающий с уже существующим файлом.</summary>
+    private string UniqueGesturePath(string name)
+    {
+        string slug = Slug(name);
+        string candidate = Path.Combine(GesturesDirectory, slug + ".yaml");
+        int counter = 2;
+        while (File.Exists(candidate))
+        {
+            candidate = Path.Combine(GesturesDirectory, $"{slug}-{counter++}.yaml");
+        }
+        return candidate;
+    }
+
     public static string Slug(string name)
     {
         var builder = new StringBuilder();

@@ -24,7 +24,7 @@ public sealed class SettingsWindow : Window
     private readonly TextBlock _minStrokeLabel = new();
     private readonly ComboBox _unrecognized = new() { Width = 220 };
     private readonly CheckBox _fullscreen = new() { Content = L.Tr("Отключаться в полноэкранных") };
-    private readonly TextBox _excluded = new() { Width = 220, Height = 60, AcceptsReturn = true };
+    private AppListEditor _excludedEditor = null!;
 
     private readonly CheckBox _trailEnabled = new() { Content = L.Tr("Рисовать след") };
     private readonly TextBox _trailColor = new() { Width = 100 };
@@ -51,6 +51,7 @@ public sealed class SettingsWindow : Window
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         this.SetResourceReference(BackgroundProperty, "RcWindow");
         SourceInitialized += (_, _) => Theme.ApplyWindowChrome(this);
+        _excludedEditor = new AppListEditor(() => { }, L.Tr("Пусто — жесты работают во всех программах."));
         Content = BuildLayout();
         Fill();
         // Подписываемся после Fill, чтобы начальный выбор не считался за смену:
@@ -83,15 +84,12 @@ public sealed class SettingsWindow : Window
             Theme.Note(L.Tr("«Отдать программе» значит, что после неудачного росчерка откроется ")
                      + L.Tr("обычное контекстное меню. Так понятнее: видно, что жест не вышел."))));
 
-        var excludedPicker = WindowPicker.Target(_excluded);
-        excludedPicker.Margin = new Thickness(0, 6, 0, 0);
-        excludedPicker.HorizontalAlignment = HorizontalAlignment.Left;
         panel.Children.Add(Theme.Card(L.Tr("Программы"),
             _fullscreen,
-            Theme.Row(L.Tr("Не мешать в программах"), _excluded),
-            excludedPicker,
-            Theme.Note(L.Tr("По строке на программу: «class:game.exe» — точное совпадение, ")
-                     + L.Tr("иначе строка понимается как выражение."))));
+            Theme.Themed(new TextBlock { Text = L.Tr("Не мешать в программах:"), Margin = new Thickness(0, 6, 0, 2) }, "RcText"),
+            _excludedEditor.Panel,
+            Theme.Note(L.Tr("Наведите мишень на окно программы, где жесты мешают. ")
+                     + L.Tr("Строки можно снимать крестиком."))));
 
         var colorRow = new StackPanel { Orientation = Orientation.Horizontal };
         colorRow.Children.Add(_trailColor);
@@ -168,7 +166,7 @@ public sealed class SettingsWindow : Window
         _unrecognized.SelectedIndex = string.Equals(_settings.Unrecognized, "swallow",
             StringComparison.OrdinalIgnoreCase) ? 1 : 0;
         _fullscreen.IsChecked = _settings.PauseInFullscreen;
-        _excluded.Text = string.Join(Environment.NewLine, _settings.ExcludedApps);
+        _excludedEditor.Load(_settings.ExcludedApps);
 
         _trailEnabled.IsChecked = _settings.Overlay.Enabled;
         _trailColor.Text = _settings.Overlay.Color;
@@ -193,11 +191,6 @@ public sealed class SettingsWindow : Window
         _settings.MinStrokePx = Math.Round(_minStroke.Value);
         _settings.Unrecognized = (string)((ComboBoxItem)_unrecognized.SelectedItem).Tag;
         _settings.PauseInFullscreen = _fullscreen.IsChecked == true;
-        _settings.ExcludedApps = _excluded.Text
-            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-            .Select(part => part.Trim())
-            .Where(part => part.Length > 0)
-            .ToList();
 
         _settings.Overlay.Enabled = _trailEnabled.IsChecked == true;
         _settings.Overlay.Color = _trailColor.Text.Trim();
