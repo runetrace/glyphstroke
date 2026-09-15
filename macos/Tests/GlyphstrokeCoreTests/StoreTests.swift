@@ -120,14 +120,15 @@ final class StoreTests: XCTestCase {
         try store.prepareDirectories()
 
         var first = Gesture(name: "Новый жест")
-        let firstURL = try store.save(first)
-        first.fileURL = firstURL
+        first.fileURL = try store.save(first)
         first.name = "Разворот"
-        _ = try store.save(first) // тот же файл (fileURL задан), просто переименование
+        first.fileURL = try store.save(first) // переименование: файл станет разворот.yaml
 
         let secondURL = try store.save(Gesture(name: "Новый жест"))
 
-        XCTAssertNotEqual(firstURL, secondURL)
+        // first.fileURL уже актуальный (разворот.yaml), второй занял освободившееся имя —
+        // это не перезапись: оба жеста на месте с верными именами.
+        XCTAssertNotEqual(first.fileURL, secondURL)
         XCTAssertEqual(store.loadGestures().map(\.name).sorted(),
                        ["Новый жест", "Разворот"].sorted())
     }
