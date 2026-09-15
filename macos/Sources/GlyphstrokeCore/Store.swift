@@ -237,7 +237,20 @@ public final class Store {
         // одинаковым слагом имени (переименовали первый «Новый жест», слаг
         // освободился, добавили второй) писались бы в один файл — второй молча
         // затирал первый. Проверяем существование на диске, а не только имя.
-        let url = gesture.fileURL ?? uniqueGestureURL(for: gesture.name)
+        // Имя не менялось — файл оставляем; переименовали жест — приводим имя
+        // файла к новому названию, старый удалим после успешной записи.
+        var oldToDelete: URL? = nil
+        let url: URL
+        if let existing = gesture.fileURL {
+            if fileNameMatchesName(existing, gesture.name) {
+                url = existing
+            } else {
+                oldToDelete = existing
+                url = uniqueGestureURL(for: gesture.name)
+            }
+        } else {
+            url = uniqueGestureURL(for: gesture.name)
+        }
 
         var raw: [String: Any] = [
             "name": gesture.name,
@@ -259,6 +272,9 @@ public final class Store {
         raw["templates"] = gesture.templates.map { Store.formatStroke($0) }
 
         try write(text: try Yams.dump(object: raw, allowUnicode: true), to: url)
+        if let old = oldToDelete, old != url {
+            try? FileManager.default.removeItem(at: old)
+        }
         return url
     }
 
@@ -321,6 +337,17 @@ public final class Store {
     }
 
     /// Имя файла из названия жеста: буквы и цифры любых языков, остальное — дефис.
+    /// Соответствует ли имя файла текущему названию жеста: точный слаг или слаг
+    /// с числовым суффиксом «-2» (его добавляет uniqueGestureURL при совпадении).
+    private func fileNameMatchesName(_ url: URL, _ name: String) -> Bool {
+        let stem = url.deletingPathExtension().lastPathComponent
+        let want = Store.slug(name)
+        if stem == want { return true }
+        guard stem.hasPrefix(want + "-") else { return false }
+        let suffix = stem.dropFirst(want.count + 1)
+        return !suffix.isEmpty && suffix.allSatisfy { $0.isNumber }
+    }
+
     /// Путь под новый жест, не совпадающий с уже существующим файлом.
     private func uniqueGestureURL(for name: String) -> URL {
         let slug = Store.slug(name)

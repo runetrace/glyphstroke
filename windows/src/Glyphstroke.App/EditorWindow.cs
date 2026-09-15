@@ -170,24 +170,14 @@ public sealed class EditorWindow : Window
         }, "RcMuted");
         var menuCard = Theme.Card(L.Tr("Меню"), menuNote, _menu, addMenuItem);
 
-        var appsNote = Theme.Themed(new TextBlock
-        {
-            Text = L.Tr("Пусто — жест работает везде. По строке на программу: «class:chrome.exe» — ")
-                 + L.Tr("точное совпадение, иначе строка понимается как выражение и ищется ")
-                 + L.Tr("в «программа | заголовок окна»."),
-            FontSize = 12,
-            TextWrapping = TextWrapping.Wrap,
-            Margin = new Thickness(0, 4, 0, 0),
-        }, "RcMuted");
-        var toleranceRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 6, 0, 0) };
-        toleranceRow.Children.Add(new TextBlock { Text = L.Tr("Допуск поворота"), Width = 150, VerticalAlignment = VerticalAlignment.Center });
-        _tolerance.Width = 200;
+        var toleranceRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 0) };
+        var toleranceTip = L.Tr("Насколько сильно рисунок может быть повёрнут и всё равно распознаться. 0° — строго как образец; больше — терпимее к наклону руки.");
+        toleranceRow.Children.Add(new TextBlock { Text = L.Tr("Допуск поворота"), Width = 150, VerticalAlignment = VerticalAlignment.Center, ToolTip = toleranceTip });
+        _tolerance.Width = 200; _tolerance.ToolTip = toleranceTip;
         toleranceRow.Children.Add(_tolerance);
         toleranceRow.Children.Add(_toleranceLabel);
         var whereCard = Theme.Card(L.Tr("Где работает"),
-            Theme.Themed(new TextBlock { Text = L.Tr("Только в программах:"), Margin = new Thickness(0, 0, 0, 2) }, "RcText"),
             _appsEditor.Panel,
-            appsNote,
             toleranceRow);
 
         // Вкладки Росчерк / Действия / Меню — как в версии для Linux.
@@ -767,8 +757,8 @@ public sealed class EditorWindow : Window
     private UIElement BuildProfileRow()
     {
         var row = new DockPanel { Margin = new Thickness(0, 0, 0, 8) };
-        var add = new Button { Content = "+", Width = 28, Margin = new Thickness(6, 0, 0, 0), ToolTip = L.Tr("Новый набор жестов") };
-        var remove = new Button { Content = "–", Width = 28, Margin = new Thickness(6, 0, 0, 0), ToolTip = L.Tr("Удалить набор") };
+        var add = new Button { Content = L.Tr("Новый"), Padding = new Thickness(10, 2, 10, 2), Margin = new Thickness(6, 0, 0, 0), ToolTip = L.Tr("Новый набор жестов") };
+        var remove = new Button { Content = L.Tr("Удалить"), Padding = new Thickness(10, 2, 10, 2), Margin = new Thickness(6, 0, 0, 0), ToolTip = L.Tr("Удалить набор") };
         add.Click += (_, _) => AddProfile();
         remove.Click += (_, _) => RemoveCurrentProfile();
         DockPanel.SetDock(remove, Dock.Right);

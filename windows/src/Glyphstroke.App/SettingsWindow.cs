@@ -20,8 +20,8 @@ public sealed class SettingsWindow : Window
     private readonly Settings _settings;
 
     private readonly ComboBox _trigger = new() { Width = 220 };
-    private readonly Slider _minStroke = new() { Width = 220, Minimum = 10, Maximum = 150, TickFrequency = 5, IsSnapToTickEnabled = true };
-    private readonly TextBlock _minStrokeLabel = new();
+    private readonly Slider _minStroke = new() { Width = 190, Minimum = 10, Maximum = 150, TickFrequency = 5, IsSnapToTickEnabled = true };
+    private readonly TextBlock _minStrokeLabel = new() { Width = 70, VerticalAlignment = VerticalAlignment.Center };
     private readonly ComboBox _unrecognized = new() { Width = 220 };
     private readonly CheckBox _fullscreen = new() { Content = L.Tr("Отключаться в полноэкранных") };
     private AppListEditor _excludedEditor = null!;
@@ -29,9 +29,12 @@ public sealed class SettingsWindow : Window
     private readonly CheckBox _trailEnabled = new() { Content = L.Tr("Рисовать след") };
     private readonly TextBox _trailColor = new() { Width = 100 };
     private readonly Rectangle _trailSample = new() { Width = 60, Height = 18, Margin = new Thickness(8, 0, 0, 0) };
-    private readonly Slider _trailWidth = new() { Width = 220, Minimum = 1, Maximum = 12, TickFrequency = 1, IsSnapToTickEnabled = true };
-    private readonly Slider _trailOpacity = new() { Width = 220, Minimum = 10, Maximum = 100, TickFrequency = 5, IsSnapToTickEnabled = true };
-    private readonly Slider _trailFade = new() { Width = 220, Minimum = 0, Maximum = 1000, TickFrequency = 20, IsSnapToTickEnabled = true };
+    private readonly Slider _trailWidth = new() { Width = 190, Minimum = 1, Maximum = 12, TickFrequency = 1, IsSnapToTickEnabled = true };
+    private readonly TextBlock _trailWidthLabel = new() { Width = 70, VerticalAlignment = VerticalAlignment.Center };
+    private readonly Slider _trailOpacity = new() { Width = 190, Minimum = 10, Maximum = 100, TickFrequency = 5, IsSnapToTickEnabled = true };
+    private readonly TextBlock _trailOpacityLabel = new() { Width = 70, VerticalAlignment = VerticalAlignment.Center };
+    private readonly Slider _trailFade = new() { Width = 190, Minimum = 0, Maximum = 1000, TickFrequency = 20, IsSnapToTickEnabled = true };
+    private readonly TextBlock _trailFadeLabel = new() { Width = 70, VerticalAlignment = VerticalAlignment.Center };
 
     private readonly CheckBox _autostart = new() { Content = L.Tr("Запускать при входе в систему") };
     private readonly CheckBox _checkUpdates = new() { Content = L.Tr("Проверять обновления") };
@@ -46,7 +49,7 @@ public sealed class SettingsWindow : Window
         _settings = store.LoadSettings();
 
         Title = L.Tr("Glyphstroke — настройки");
-        Width = 520;
+        Width = 600;
         Height = 640;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         this.SetResourceReference(BackgroundProperty, "RcWindow");
@@ -65,21 +68,34 @@ public sealed class SettingsWindow : Window
         };
     }
 
+    /// <summary>Ползунок + подпись значения справа в один ряд.</summary>
+    private static StackPanel SliderRow(Slider slider, TextBlock label)
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        row.Children.Add(slider);
+        label.Margin = new Thickness(8, 0, 0, 0);
+        label.SetResourceReference(TextBlock.ForegroundProperty, "RcText");
+        row.Children.Add(label);
+        return row;
+    }
+
     private UIElement BuildLayout()
     {
         var panel = new StackPanel { Margin = new Thickness(16) };
 
         _trigger.Items.Add(new ComboBoxItem { Content = L.Tr("Правая кнопка"), Tag = "BTN_RIGHT" });
         _trigger.Items.Add(new ComboBoxItem { Content = L.Tr("Средняя кнопка"), Tag = "BTN_MIDDLE" });
-        var strokeRow = new StackPanel { Orientation = Orientation.Horizontal };
-        strokeRow.Children.Add(_minStroke);
-        strokeRow.Children.Add(_minStrokeLabel);
-        _minStroke.ValueChanged += (_, _) => _minStrokeLabel.Text = $"  {(int)_minStroke.Value} {L.Tr("точек")}";
+        var strokeTip = L.Tr("Если протянуть мышь короче этого расстояния, это считается обычным щелчком и передаётся программе — жест не запускается. Больше значение — реже случайные срабатывания.");
+        var strokeRow = SliderRow(_minStroke, _minStrokeLabel);
+        strokeRow.ToolTip = strokeTip;
+        _minStroke.ValueChanged += (_, _) => _minStrokeLabel.Text = $"{(int)_minStroke.Value} {L.Tr("px")}";
         _unrecognized.Items.Add(new ComboBoxItem { Content = L.Tr("отдать программе"), Tag = "passthrough" });
         _unrecognized.Items.Add(new ComboBoxItem { Content = L.Tr("проглотить"), Tag = "swallow" });
         panel.Children.Add(Theme.Card(L.Tr("Мышь"),
             Theme.Row(L.Tr("Кнопка-модификатор"), _trigger),
-            Theme.Row(L.Tr("Короткое движение — щелчок"), strokeRow),
+            Theme.Row(L.Tr("Порог щелчка"), strokeRow),
+            Theme.Note(L.Tr("Движение короче порога — это обычный щелчок, он уходит программе. ")
+                     + L.Tr("Так жест не срабатывает от случайного клика.")),
             Theme.Row(L.Tr("Если жест не распознан"), _unrecognized),
             Theme.Note(L.Tr("«Отдать программе» значит, что после неудачного росчерка откроется ")
                      + L.Tr("обычное контекстное меню. Так понятнее: видно, что жест не вышел."))));
@@ -95,17 +111,19 @@ public sealed class SettingsWindow : Window
         colorRow.Children.Add(_trailColor);
         colorRow.Children.Add(_trailSample);
         _trailColor.TextChanged += (_, _) => RefreshSample();
+        _trailWidth.ValueChanged += (_, _) => _trailWidthLabel.Text = $"{(int)_trailWidth.Value} {L.Tr("px")}";
+        _trailOpacity.ValueChanged += (_, _) => _trailOpacityLabel.Text = $"{(int)_trailOpacity.Value} %";
+        _trailFade.ValueChanged += (_, _) => _trailFadeLabel.Text = $"{(int)_trailFade.Value} {L.Tr("мс")}";
         panel.Children.Add(Theme.Card(L.Tr("След"),
             _trailEnabled,
             Theme.Row(L.Tr("Цвет"), colorRow),
-            Theme.Row(L.Tr("Толщина"), _trailWidth),
-            Theme.Row(L.Tr("Непрозрачность, %"), _trailOpacity),
-            Theme.Row(L.Tr("Гаснет за, мс"), _trailFade)));
+            Theme.Row(L.Tr("Толщина"), SliderRow(_trailWidth, _trailWidthLabel)),
+            Theme.Row(L.Tr("Непрозрачность"), SliderRow(_trailOpacity, _trailOpacityLabel)),
+            Theme.Row(L.Tr("Гаснет за"), SliderRow(_trailFade, _trailFadeLabel))));
 
         panel.Children.Add(Theme.Card(L.Tr("Запуск и обновления"),
             _autostart,
             _checkUpdates,
-            Theme.Row(L.Tr("Где лежат выпуски"), _updateRepo),
             Theme.Note(L.Tr("Раз в сутки программа спрашивает страницу выпусков, не вышла ли ")
                      + L.Tr("версия новее. Сама она не обновляется: перехват мыши — не то место, ")
                      + L.Tr("где уместна тихая подмена."))));
@@ -162,7 +180,7 @@ public sealed class SettingsWindow : Window
         _trigger.SelectedIndex = string.Equals(_settings.TriggerButton, "BTN_MIDDLE",
             StringComparison.OrdinalIgnoreCase) ? 1 : 0;
         _minStroke.Value = _settings.MinStrokePx;
-        _minStrokeLabel.Text = $"  {(int)_settings.MinStrokePx} {L.Tr("точек")}";
+        _minStrokeLabel.Text = $"{(int)_settings.MinStrokePx} {L.Tr("px")}";
         _unrecognized.SelectedIndex = string.Equals(_settings.Unrecognized, "swallow",
             StringComparison.OrdinalIgnoreCase) ? 1 : 0;
         _fullscreen.IsChecked = _settings.PauseInFullscreen;
@@ -173,6 +191,9 @@ public sealed class SettingsWindow : Window
         _trailWidth.Value = _settings.Overlay.Width;
         _trailOpacity.Value = _settings.Overlay.Opacity * 100;
         _trailFade.Value = _settings.Overlay.FadeMs;
+        _trailWidthLabel.Text = $"{(int)_trailWidth.Value} {L.Tr("px")}";
+        _trailOpacityLabel.Text = $"{(int)_trailOpacity.Value} %";
+        _trailFadeLabel.Text = $"{(int)_trailFade.Value} {L.Tr("мс")}";
         RefreshSample();
 
         _autostart.IsChecked = TrayApp.LaunchesAtLogin();

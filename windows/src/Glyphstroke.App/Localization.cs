@@ -193,5 +193,27 @@ internal static class L
         ["Установлена последняя версия"] = "The latest version is installed:",
         ["Та же фигура у:"] = "The same shape is on:",
         ["Удалить жест"] = "Delete the gesture",
+        // «Где работает», список программ, настройки ползунков
+        ["px"] = "px",
+        ["мс"] = "ms",
+        ["Новый"] = "New",
+        ["Порог щелчка"] = "Click threshold",
+        ["Гаснет за"] = "Fades in",
+        ["Непрозрачность"] = "Opacity",
+        ["Убрать программу"] = "Remove program",
+        ["Не мешать в программах:"] = "Don't interfere in programs:",
+        ["Пусто — жест работает во всех программах."] = "Empty — the gesture works in all programs.",
+        ["Пусто — жесты работают во всех программах."] = "Empty — gestures work in all programs.",
+        ["Наведите мишень на окно программы, где жесты мешают. "] =
+            "Point the target at the window of a program where gestures get in the way. ",
+        ["Строки можно снимать крестиком."] = "Rows can be removed with the ✕.",
+        ["Движение короче порога — это обычный щелчок, он уходит программе. "] =
+            "A movement shorter than the threshold is a normal click and goes to the program. ",
+        ["Так жест не срабатывает от случайного клика."] =
+            "This keeps a gesture from firing on an accidental click.",
+        ["Если протянуть мышь короче этого расстояния, это считается обычным щелчком и передаётся программе — жест не запускается. Больше значение — реже случайные срабатывания."] =
+            "If you drag the mouse less than this distance, it counts as a normal click and goes to the program — no gesture runs. Larger value means fewer accidental triggers.",
+        ["Насколько сильно рисунок может быть повёрнут и всё равно распознаться. 0° — строго как образец; больше — терпимее к наклону руки."] =
+            "How much the drawing may be rotated and still be recognized. 0° — exactly like the sample; higher — more tolerant of a tilted hand.",
     };
 }

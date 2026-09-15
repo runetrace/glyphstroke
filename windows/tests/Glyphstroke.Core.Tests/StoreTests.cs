@@ -182,6 +182,40 @@ public class StoreTests : IDisposable
     }
 
     [Fact]
+    public void RenamingAGestureRenamesItsFile()
+    {
+        // Переименовали жест — файл должен получить имя по новому названию,
+        // старый файл исчезает (иначе на диске остаётся «новый-жест-2.yaml»).
+        var store = NewStore();
+        var gesture = new Gesture { Name = "Назад" };
+        string first = store.Save(gesture);
+        Assert.Equal("назад.yaml", Path.GetFileName(first));
+
+        gesture.Name = "Вперёд";
+        string second = store.Save(gesture);
+        Assert.Equal("вперёд.yaml", Path.GetFileName(second));
+        Assert.False(File.Exists(first));           // старый файл удалён
+        Assert.True(File.Exists(second));
+        Assert.Equal("Вперёд", store.LoadGestures().Single().Name);
+    }
+
+    [Fact]
+    public void ResavingWithoutRenameKeepsTheFile()
+    {
+        // Пересохранение без смены имени не должно трогать имя файла
+        // (в т.ч. уникализированное «-2»).
+        var store = NewStore();
+        store.Save(new Gesture { Name = "Копия" });        // копия.yaml
+        var second = new Gesture { Name = "Копия" };
+        string p = store.Save(second);                     // копия-2.yaml
+        Assert.Equal("копия-2.yaml", Path.GetFileName(p));
+
+        second.Enabled = false;
+        string again = store.Save(second);                 // имя не менялось
+        Assert.Equal(p, again);                            // тот же файл
+    }
+
+    [Fact]
     public void SlugKeepsLettersAndLowersThem()
     {
         Assert.Equal("новая-вкладка", Store.Slug("Новая вкладка"));

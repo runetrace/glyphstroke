@@ -132,6 +132,35 @@ final class StoreTests: XCTestCase {
                        ["Новый жест", "Разворот"].sorted())
     }
 
+    func testRenamingAGestureRenamesItsFile() throws {
+        // Переименовали жест — файл получает имя по новому названию, старый исчезает.
+        let store = makeStore()
+        try store.prepareDirectories()
+        var g = Gesture(name: "Назад")
+        let first = try store.save(g)
+        XCTAssertEqual(first.lastPathComponent, "назад.yaml")
+        g.fileURL = first
+        g.name = "Вперёд"
+        let second = try store.save(g)
+        XCTAssertEqual(second.lastPathComponent, "вперёд.yaml")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: first.path))
+        XCTAssertEqual(store.loadGestures().map(\.name), ["Вперёд"])
+    }
+
+    func testResavingWithoutRenameKeepsTheFile() throws {
+        // Пересохранение без смены имени не трогает имя файла (в т.ч. с «-2»).
+        let store = makeStore()
+        try store.prepareDirectories()
+        _ = try store.save(Gesture(name: "Копия"))     // копия.yaml
+        var second = Gesture(name: "Копия")
+        let p = try store.save(second)                 // копия-2.yaml
+        XCTAssertEqual(p.lastPathComponent, "копия-2.yaml")
+        second.fileURL = p
+        second.enabled = false
+        let again = try store.save(second)             // имя не менялось
+        XCTAssertEqual(again, p)
+    }
+
     func testGestureWithoutAMenuKeepsNoMenuKey() throws {
         let store = makeStore()
         try store.prepareDirectories()

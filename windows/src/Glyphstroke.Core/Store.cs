@@ -286,7 +286,23 @@ public sealed class Store
         // освободив слаг, и добавили второй) писались бы в один файл — второй
         // молча затирал первый. Проверяем существование на диске, а не только
         // имя в памяти.
-        string path = gesture.FilePath ?? UniqueGesturePath(gesture.Name);
+        string? oldToDelete = null;
+        string path;
+        if (gesture.FilePath is null)
+        {
+            path = UniqueGesturePath(gesture.Name);
+        }
+        else if (FileNameMatchesName(gesture.FilePath, gesture.Name))
+        {
+            path = gesture.FilePath; // имя не менялось — файл оставляем как есть
+        }
+        else
+        {
+            // Жест переименовали — приводим и имя файла к новому названию,
+            // старый файл удалим после успешной записи нового.
+            oldToDelete = gesture.FilePath;
+            path = UniqueGesturePath(gesture.Name);
+        }
 
         var text = new StringBuilder();
         text.AppendLine($"name: {Quote(gesture.Name)}");
@@ -327,8 +343,24 @@ public sealed class Store
         }
 
         WriteAtomic(path, text.ToString());
+        if (oldToDelete is not null && !string.Equals(oldToDelete, path, StringComparison.OrdinalIgnoreCase))
+        {
+            try { File.Delete(oldToDelete); } catch (Exception) { /* не критично */ }
+        }
         gesture.FilePath = path;
         return path;
+    }
+
+    /// <summary>Соответствует ли имя файла текущему названию жеста: либо точный
+    /// слаг, либо слаг с числовым суффиксом «-2» (его добавляет UniqueGesturePath
+    /// при совпадении имён). Если нет — жест переименовали, файл надо обновить.</summary>
+    private static bool FileNameMatchesName(string filePath, string name)
+    {
+        string stem = Path.GetFileNameWithoutExtension(filePath);
+        string want = Slug(name);
+        if (string.Equals(stem, want, StringComparison.Ordinal)) return true;
+        return stem.StartsWith(want + "-", StringComparison.Ordinal)
+            && stem[(want.Length + 1)..].All(char.IsDigit);
     }
 
     public void Delete(Gesture gesture)
