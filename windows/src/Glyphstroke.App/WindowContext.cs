@@ -118,7 +118,11 @@ public static class WindowContext
         {
             return false;
         }
-        return rect.Left <= info.Monitor.Left && rect.Top <= info.Monitor.Top
-            && rect.Right >= info.Monitor.Right && rect.Bottom >= info.Monitor.Bottom;
+        // Допуск в пару пикселей: часть игр отдаёт рамку на 1–2 px больше/меньше
+        // монитора, и строгое равенство иногда не срабатывало.
+        const int slack = 2;
+        var m = info.Monitor;
+        return rect.Left <= m.Left + slack && rect.Top <= m.Top + slack
+            && rect.Right >= m.Right - slack && rect.Bottom >= m.Bottom - slack;
     }
 }

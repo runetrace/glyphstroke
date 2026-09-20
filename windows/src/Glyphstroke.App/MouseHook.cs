@@ -6,7 +6,12 @@ namespace Glyphstroke.App;
 /// <summary>Кому перехватчик рассказывает о росчерке.</summary>
 public interface IMouseHookListener
 {
-    void StrokeBegan(Point point);
+    /// <summary>
+    /// Кнопку нажали. Вернуть <c>true</c>, если росчерк берём себе (тогда нажатие
+    /// глотается, решение — на отпускании), и <c>false</c>, если этот случай не
+    /// наш (исключённая программа, полноэкранное) — тогда нажатие идёт программе.
+    /// </summary>
+    bool StrokeBegan(Point point);
     void StrokeExtended(Point point);
 
     /// <summary>
@@ -89,6 +94,23 @@ public sealed class MouseHook : IDisposable
 
     private IntPtr Callback(int code, IntPtr wParam, IntPtr lParam)
     {
+        // Колбэк глобального хука мыши обязан вернуться быстро и НИКОГДА не
+        // бросать исключение: и то и другое подвешивает обработку мыши во всей
+        // системе. Поэтому тело в try/catch, а тяжёлую работу слушатель уводит
+        // в другой поток.
+        try
+        {
+            return Handle(code, wParam, lParam);
+        }
+        catch
+        {
+            _pressing = false;
+            return Native.CallNextHookEx(_hook, code, wParam, lParam);
+        }
+    }
+
+    private IntPtr Handle(int code, IntPtr wParam, IntPtr lParam)
+    {
         if (code < 0)
         {
             return Native.CallNextHookEx(_hook, code, wParam, lParam);
@@ -105,10 +127,17 @@ public sealed class MouseHook : IDisposable
 
         if (message == DownMessage)
         {
-            _pressing = true;
             _pressLocation = data.Point;
-            _listener.StrokeBegan(point);
-            return new IntPtr(1);            // нажатие забираем: решим на отпускании
+            // Спрашиваем слушателя, наш ли это случай. Если нет (исключённая
+            // программа, полноэкранное) — отдаём нажатие программе как есть,
+            // ничего не глотаем и не подменяем.
+            if (_listener.StrokeBegan(point))
+            {
+                _pressing = true;
+                return new IntPtr(1);        // наш росчерк: решим на отпускании
+            }
+            _pressing = false;
+            return Native.CallNextHookEx(_hook, code, wParam, lParam);
         }
 
         if (message == Native.WM_MOUSEMOVE)
@@ -132,9 +161,8 @@ public sealed class MouseHook : IDisposable
             bool swallowed = _listener.StrokeEnded(point);
             if (!swallowed)
             {
-                // Жеста не вышло — возвращаем программе обычный щелчок в той
-                // точке, где кнопку нажали, а не там, где отпустили: иначе меню
-                // открылось бы в стороне от места нажатия.
+                // Жеста не вышло — возвращаем программе обычный щелчок кнопкой-
+                // модификатором.
                 ReplayClick(_pressLocation);
             }
             return new IntPtr(1);

@@ -85,25 +85,27 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
 
     // --- перехватчик ---
 
-    public void StrokeBegan(Point point)
+    public bool StrokeBegan(Point point)
     {
-        _strokeApp = WindowContext.Current();
         _stroke.Clear();
+        _strokeApp = WindowContext.Current();
 
-        // Исключённые программы: в них мышь не трогаем вовсе. Проверка именно
-        // здесь, а не при выполнении, — иначе в чужом окне пропадал бы щелчок.
+        // Исключённые и полноэкранные — не наш случай: возвращаем false, и
+        // перехватчик отдаёт нажатие программе как есть (без глотания и подмены).
         if (IsExcluded(_strokeApp))
         {
-            return;
+            return false;
         }
         if (_settings.PauseInFullscreen && WindowContext.IsFullscreen())
         {
-            return;
+            return false;
         }
 
         _stroke.Add(point);
         Rebuild(_strokeApp);
-        _trail.Dispatcher.Invoke(() => _trail.Begin(point));
+        // НЕ блокируем колбэк хука: рисуем след асинхронно.
+        _trail.Dispatcher.InvokeAsync(() => _trail.Begin(point));
+        return true;
     }
 
     public void StrokeExtended(Point point)
@@ -113,7 +115,7 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
             return;
         }
         _stroke.Add(point);
-        _trail.Dispatcher.Invoke(() => _trail.Extend(point));
+        _trail.Dispatcher.InvokeAsync(() => _trail.Extend(point));
     }
 
     public bool StrokeEnded(Point point)
@@ -123,7 +125,7 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
             return false;
         }
         _stroke.Add(point);
-        _trail.Dispatcher.Invoke(() => _trail.End());
+        _trail.Dispatcher.InvokeAsync(() => _trail.End());
 
         double length = Geometry.PathLength(_stroke);
         var stroke = _stroke.ToList();
@@ -167,7 +169,10 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
             });
             return true;
         }
-        _actions.Run(gesture.Actions);
+        // Действия — в фоновый поток: они могут запускать программы и слать
+        // ввод, и держать на этом колбэк хука нельзя (замёрзнет мышь всей системы).
+        var actions = gesture.Actions.ToList();
+        Task.Run(() => _actions.Run(actions));
         return true;
     }
 
