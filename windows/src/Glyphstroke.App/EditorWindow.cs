@@ -335,44 +335,54 @@ public sealed class EditorWindow : Window
     }
 
     /// <summary>Построить строки редактора действий для произвольного списка.</summary>
+    /// <remarks>
+    /// Правая часть строки зависит от типа и пересобирается при его смене: список
+    /// стандартных действий, выпадающий выбор для окна/кнопки/прокрутки, поле с
+    /// кнопкой «Обзор…» для программы и команды, простое поле для клавиш/текста/
+    /// паузы. Значение при смене типа сбрасывается — иначе в поле «Запуск
+    /// программы» осталось бы «copy» от прежнего типа и было бы непонятно, что
+    /// вводить. В пустом поле показывается подсказка-плейсхолдер.
+    /// </remarks>
     private void FillActionRows(List<GestureAction> actions, Panel container, Action refill)
     {
         container.Children.Clear();
         foreach (var action in actions.ToList())
         {
             var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 2) };
+            bool loading = false;   // подавляет обработчики, пока строку заполняем программно
 
-            var type = new ComboBox { Width = 170 };
+            var type = new ComboBox { Width = 160 };
             foreach (var (typeId, title) in ActionTypes)
             {
                 type.Items.Add(new ComboBoxItem { Content = title, Tag = typeId });
             }
             type.SelectedIndex = Math.Max(0, ActionTypes.FindIndex(item => item.Value == action.Type));
 
-            var standard = new ComboBox { Width = 260, Visibility = Visibility.Collapsed };
+            var standard = new ComboBox { Width = 240, Margin = new Thickness(6, 0, 0, 0), Visibility = Visibility.Collapsed };
             foreach (var entry in StandardActions.All)
             {
                 standard.Items.Add(new ComboBoxItem { Content = StandardActions.Describe(entry.Id), Tag = entry.Id });
             }
-            standard.SelectedIndex = Math.Max(0,
-                StandardActions.All.ToList().FindIndex(entry => entry.Id == action.Value));
 
-            // Поле значения с подсказкой-водяным знаком: пустое поле показывает
-            // ожидаемый формат, и он свой у каждого типа — так правая часть строки
-            // заметно меняется при смене типа действия.
-            var value = new TextBox { Width = 260, Text = action.Value };
-            var hint = new TextBlock
+            var choice = new ComboBox { Width = 180, Margin = new Thickness(6, 0, 0, 0), Visibility = Visibility.Collapsed };
+            var amount = new TextBox { Width = 60, Margin = new Thickness(6, 0, 0, 0), Visibility = Visibility.Collapsed };
+            amount.ToolTip = L.Tr("число щелчков (необязательно)");
+
+            // Поле значения с подсказкой-плейсхолдером: пустое поле показывает, что
+            // сюда вводить, и подсказка своя у каждого типа.
+            var value = new TextBox { Width = 220, Margin = new Thickness(6, 0, 0, 0), Text = action.Value };
+            var placeholder = new TextBlock
             {
                 IsHitTestVisible = false,
-                Margin = new Thickness(6, 0, 6, 0),
+                Margin = new Thickness(11, 0, 6, 0),
                 VerticalAlignment = VerticalAlignment.Center,
                 Foreground = Brushes.Gray,
             };
-            var valueBox = new Grid { Width = 260 };
+            var valueBox = new Grid { Width = 220, Margin = new Thickness(6, 0, 0, 0), Visibility = Visibility.Collapsed };
+            value.Margin = new Thickness(0);
             valueBox.Children.Add(value);
-            valueBox.Children.Add(hint);
+            valueBox.Children.Add(placeholder);
 
-            // Кнопка «Обзор…» — только для типов, где значение это файл или программа.
             var browse = new Button
             {
                 Content = L.Tr("Обзор…"),
@@ -382,47 +392,130 @@ public sealed class EditorWindow : Window
             };
             var remove = new Button { Content = "✕", Margin = new Thickness(6, 0, 0, 0), Padding = new Thickness(6, 0, 6, 0) };
 
-            void UpdateHint()
+            string CurrentType() => (string)((ComboBoxItem)type.SelectedItem).Tag;
+            string ChoiceToken() => choice.SelectedItem is ComboBoxItem ci ? (string)ci.Tag : string.Empty;
+
+            void PopulateChoice(List<(string Token, string Title)> options, string selected)
             {
-                hint.Text = ActionHints.TryGetValue(action.Type, out var text) ? text : string.Empty;
-                hint.Visibility = value.Text.Length == 0 && hint.Text.Length > 0
+                choice.Items.Clear();
+                int sel = 0;
+                for (int i = 0; i < options.Count; i++)
+                {
+                    choice.Items.Add(new ComboBoxItem { Content = L.Tr(options[i].Title), Tag = options[i].Token });
+                    if (options[i].Token == selected) sel = i;
+                }
+                choice.SelectedIndex = sel;
+            }
+
+            // Собрать значение для окна/кнопки/прокрутки из текущего выбора.
+            void WriteChoice()
+            {
+                if (CurrentType() == "scroll")
+                {
+                    string amt = amount.Text.Trim();
+                    action.Value = amt.Length > 0 ? $"{ChoiceToken()} {amt}" : ChoiceToken();
+                }
+                else
+                {
+                    action.Value = ChoiceToken();
+                }
+            }
+
+            void UpdatePlaceholder()
+            {
+                string t = CurrentType();
+                placeholder.Text = ActionHints.TryGetValue(t, out var h) ? L.Tr(h) : string.Empty;
+                placeholder.Visibility = value.Text.Length == 0 && placeholder.Text.Length > 0
                     ? Visibility.Visible : Visibility.Collapsed;
             }
 
-            void Apply()
+            // Перестроить правую часть под текущий тип. reset=true — тип сменил
+            // человек: значение сбрасываем к разумному для нового типа.
+            void Apply(bool reset)
             {
-                string typeId = (string)((ComboBoxItem)type.SelectedItem).Tag;
-                bool isStandard = typeId == "standard";
-                bool isNone = typeId == "none";
-                standard.Visibility = isStandard ? Visibility.Visible : Visibility.Collapsed;
-                valueBox.Visibility = isStandard || isNone ? Visibility.Collapsed : Visibility.Visible;
-                browse.Visibility = typeId is "app" or "command" ? Visibility.Visible : Visibility.Collapsed;
-                UpdateHint();
+                loading = true;
+                string t = CurrentType();
+                standard.Visibility = Visibility.Collapsed;
+                choice.Visibility = Visibility.Collapsed;
+                amount.Visibility = Visibility.Collapsed;
+                valueBox.Visibility = Visibility.Collapsed;
+                browse.Visibility = Visibility.Collapsed;
+
+                switch (t)
+                {
+                    case "standard":
+                        if (reset || StandardActions.Find(action.Value) is null) action.Value = "copy";
+                        standard.SelectedIndex = Math.Max(0,
+                            StandardActions.All.ToList().FindIndex(entry => entry.Id == action.Value));
+                        standard.Visibility = Visibility.Visible;
+                        break;
+                    case "window":
+                        if (reset || WindowChoices.All(o => o.Token != action.Value)) action.Value = WindowChoices[0].Token;
+                        PopulateChoice(WindowChoices, action.Value);
+                        choice.Visibility = Visibility.Visible;
+                        break;
+                    case "button":
+                        if (reset || ButtonChoices.All(o => o.Token != action.Value)) action.Value = ButtonChoices[0].Token;
+                        PopulateChoice(ButtonChoices, action.Value);
+                        choice.Visibility = Visibility.Visible;
+                        break;
+                    case "scroll":
+                    {
+                        var parts = (reset ? string.Empty : action.Value)
+                            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        string dir = parts.Length > 0 && ScrollChoices.Any(o => o.Token == parts[0]) ? parts[0] : "down";
+                        string amt = parts.Length > 1 ? parts[1] : string.Empty;
+                        PopulateChoice(ScrollChoices, dir);
+                        amount.Text = amt;
+                        action.Value = amt.Length > 0 ? $"{dir} {amt}" : dir;
+                        choice.Visibility = Visibility.Visible;
+                        amount.Visibility = Visibility.Visible;
+                        break;
+                    }
+                    case "none":
+                        action.Value = string.Empty;
+                        break;
+                    default:   // keys, text, command, app, delay
+                        if (reset) action.Value = string.Empty;
+                        value.Text = action.Value;
+                        valueBox.Visibility = Visibility.Visible;
+                        browse.Visibility = t is "app" or "command" ? Visibility.Visible : Visibility.Collapsed;
+                        break;
+                }
+
+                UpdatePlaceholder();
+                loading = false;
             }
 
             type.SelectionChanged += (_, _) =>
             {
-                action.Type = (string)((ComboBoxItem)type.SelectedItem).Tag;
-                if (action.Type == "standard" && StandardActions.Find(action.Value) is null)
-                {
-                    action.Value = "copy";
-                    standard.SelectedIndex = 0;
-                }
-                Apply();
+                if (loading) return;
+                action.Type = CurrentType();
+                Apply(reset: true);
                 ScheduleSave();
             };
             standard.SelectionChanged += (_, _) =>
             {
-                if (standard.SelectedItem is ComboBoxItem item)
-                {
-                    action.Value = (string)item.Tag;
-                    ScheduleSave();
-                }
+                if (loading || CurrentType() != "standard") return;
+                if (standard.SelectedItem is ComboBoxItem item) { action.Value = (string)item.Tag; ScheduleSave(); }
+            };
+            choice.SelectionChanged += (_, _) =>
+            {
+                if (loading) return;
+                WriteChoice();
+                ScheduleSave();
+            };
+            amount.TextChanged += (_, _) =>
+            {
+                if (loading || CurrentType() != "scroll") return;
+                WriteChoice();
+                ScheduleSave();
             };
             value.TextChanged += (_, _) =>
             {
+                if (loading) return;
                 action.Value = value.Text;
-                UpdateHint();
+                UpdatePlaceholder();
                 ScheduleSave();
             };
             browse.Click += (_, _) =>
@@ -431,26 +524,19 @@ public sealed class EditorWindow : Window
                 {
                     Title = L.Tr("Выбрать программу или файл"),
                     CheckFileExists = true,
-                    Filter = action.Type == "app"
+                    Filter = CurrentType() == "app"
                         ? L.Tr("Программы") + " (*.exe;*.lnk;*.bat;*.cmd)|*.exe;*.lnk;*.bat;*.cmd|" + L.Tr("Все файлы") + " (*.*)|*.*"
                         : L.Tr("Все файлы") + " (*.*)|*.*",
                 };
-                if (dialog.ShowDialog() == true)
-                {
-                    // TextChanged сам обновит action.Value, подсказку и сохранит.
-                    value.Text = dialog.FileName;
-                }
+                if (dialog.ShowDialog() == true) value.Text = dialog.FileName;   // TextChanged сохранит
             };
-            remove.Click += (_, _) =>
-            {
-                actions.Remove(action);
-                refill();
-                ScheduleSave();
-            };
+            remove.Click += (_, _) => { actions.Remove(action); refill(); ScheduleSave(); };
 
-            Apply();
+            Apply(reset: false);
             row.Children.Add(type);
             row.Children.Add(standard);
+            row.Children.Add(choice);
+            row.Children.Add(amount);
             row.Children.Add(valueBox);
             row.Children.Add(browse);
             row.Children.Add(remove);
@@ -458,17 +544,28 @@ public sealed class EditorWindow : Window
         }
     }
 
-    /// <summary>Подсказка ожидаемого формата значения для каждого типа действия.</summary>
+    private static readonly List<(string Token, string Title)> WindowChoices = new()
+    {
+        ("minimize", "Свернуть"), ("maximize", "Развернуть"), ("unmaximize", "Восстановить"),
+        ("close", "Закрыть"), ("activate", "Активировать"),
+    };
+    private static readonly List<(string Token, string Title)> ButtonChoices = new()
+    {
+        ("left", "Левая кнопка"), ("middle", "Средняя кнопка"), ("right", "Правая кнопка"),
+    };
+    private static readonly List<(string Token, string Title)> ScrollChoices = new()
+    {
+        ("down", "Вниз"), ("up", "Вверх"), ("left", "Влево"), ("right", "Вправо"),
+    };
+
+    /// <summary>Подсказка-плейсхолдер для типов со свободным вводом.</summary>
     private static readonly Dictionary<string, string> ActionHints = new()
     {
-        ["keys"] = L.Tr("например: ctrl+c ctrl+v"),
-        ["text"] = L.Tr("текст для ввода"),
-        ["command"] = L.Tr("команда оболочки"),
-        ["app"] = L.Tr("имя или путь к программе — удобнее кнопкой «Обзор»"),
-        ["button"] = L.Tr("left, right, middle"),
-        ["scroll"] = L.Tr("up 3, down, left 2"),
-        ["window"] = L.Tr("minimize, maximize, unmaximize, close, activate"),
-        ["delay"] = L.Tr("мс, например 200"),
+        ["keys"] = "напр. ctrl+c ctrl+v",
+        ["text"] = "текст для вставки",
+        ["command"] = "команда или путь (или «Обзор…»)",
+        ["app"] = "имя/путь или «Обзор…»",
+        ["delay"] = "мс, напр. 200",
     };
 
     private static readonly List<(string Value, string Title)> ActionTypes = new()

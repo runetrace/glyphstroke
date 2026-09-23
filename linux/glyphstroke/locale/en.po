@@ -3,7 +3,7 @@
 # the program speak English, which is the default language.
 msgid ""
 msgstr ""
-"Project-Id-Version: glyphstroke 1.0.7\n"
+"Project-Id-Version: glyphstroke 1.0.8\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
