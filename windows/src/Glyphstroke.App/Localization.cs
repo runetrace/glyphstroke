@@ -133,6 +133,21 @@ internal static class L
         ["Прокрутка"] = "Scroll",
         ["Пауза, мс"] = "Delay, ms",
         ["Ничего"] = "Nothing",
+        // подсказки и выбор файла в редакторе действий
+        ["Обзор…"] = "Browse…",
+        ["Выбрать программу или файл"] = "Choose a program or file",
+        ["Программы"] = "Programs",
+        ["Все файлы"] = "All files",
+        ["например: ctrl+c ctrl+v"] = "e.g. ctrl+c ctrl+v",
+        ["текст для ввода"] = "text to type",
+        ["команда оболочки"] = "shell command",
+        ["имя или путь к программе — удобнее кнопкой «Обзор»"] =
+            "program name or path — the Browse button is easier",
+        ["left, right, middle"] = "left, right, middle",
+        ["up 3, down, left 2"] = "up 3, down, left 2",
+        ["minimize, maximize, unmaximize, close, activate"] =
+            "minimize, maximize, unmaximize, close, activate",
+        ["мс, например 200"] = "ms, e.g. 200",
         // настройки
         ["Мышь"] = "Mouse",
         ["Кнопка-модификатор"] = "Modifier button",

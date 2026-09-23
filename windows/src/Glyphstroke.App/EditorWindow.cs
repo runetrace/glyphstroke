@@ -357,14 +357,47 @@ public sealed class EditorWindow : Window
             standard.SelectedIndex = Math.Max(0,
                 StandardActions.All.ToList().FindIndex(entry => entry.Id == action.Value));
 
+            // Поле значения с подсказкой-водяным знаком: пустое поле показывает
+            // ожидаемый формат, и он свой у каждого типа — так правая часть строки
+            // заметно меняется при смене типа действия.
             var value = new TextBox { Width = 260, Text = action.Value };
+            var hint = new TextBlock
+            {
+                IsHitTestVisible = false,
+                Margin = new Thickness(6, 0, 6, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = Brushes.Gray,
+            };
+            var valueBox = new Grid { Width = 260 };
+            valueBox.Children.Add(value);
+            valueBox.Children.Add(hint);
+
+            // Кнопка «Обзор…» — только для типов, где значение это файл или программа.
+            var browse = new Button
+            {
+                Content = L.Tr("Обзор…"),
+                Margin = new Thickness(6, 0, 0, 0),
+                Padding = new Thickness(8, 0, 8, 0),
+                Visibility = Visibility.Collapsed,
+            };
             var remove = new Button { Content = "✕", Margin = new Thickness(6, 0, 0, 0), Padding = new Thickness(6, 0, 6, 0) };
 
-            void ApplyVisibility()
+            void UpdateHint()
             {
-                bool isStandard = (string)((ComboBoxItem)type.SelectedItem).Tag == "standard";
+                hint.Text = ActionHints.TryGetValue(action.Type, out var text) ? text : string.Empty;
+                hint.Visibility = value.Text.Length == 0 && hint.Text.Length > 0
+                    ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            void Apply()
+            {
+                string typeId = (string)((ComboBoxItem)type.SelectedItem).Tag;
+                bool isStandard = typeId == "standard";
+                bool isNone = typeId == "none";
                 standard.Visibility = isStandard ? Visibility.Visible : Visibility.Collapsed;
-                value.Visibility = isStandard ? Visibility.Collapsed : Visibility.Visible;
+                valueBox.Visibility = isStandard || isNone ? Visibility.Collapsed : Visibility.Visible;
+                browse.Visibility = typeId is "app" or "command" ? Visibility.Visible : Visibility.Collapsed;
+                UpdateHint();
             }
 
             type.SelectionChanged += (_, _) =>
@@ -375,7 +408,7 @@ public sealed class EditorWindow : Window
                     action.Value = "copy";
                     standard.SelectedIndex = 0;
                 }
-                ApplyVisibility();
+                Apply();
                 ScheduleSave();
             };
             standard.SelectionChanged += (_, _) =>
@@ -389,7 +422,24 @@ public sealed class EditorWindow : Window
             value.TextChanged += (_, _) =>
             {
                 action.Value = value.Text;
+                UpdateHint();
                 ScheduleSave();
+            };
+            browse.Click += (_, _) =>
+            {
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = L.Tr("Выбрать программу или файл"),
+                    CheckFileExists = true,
+                    Filter = action.Type == "app"
+                        ? L.Tr("Программы") + " (*.exe;*.lnk;*.bat;*.cmd)|*.exe;*.lnk;*.bat;*.cmd|" + L.Tr("Все файлы") + " (*.*)|*.*"
+                        : L.Tr("Все файлы") + " (*.*)|*.*",
+                };
+                if (dialog.ShowDialog() == true)
+                {
+                    // TextChanged сам обновит action.Value, подсказку и сохранит.
+                    value.Text = dialog.FileName;
+                }
             };
             remove.Click += (_, _) =>
             {
@@ -398,14 +448,28 @@ public sealed class EditorWindow : Window
                 ScheduleSave();
             };
 
-            ApplyVisibility();
+            Apply();
             row.Children.Add(type);
             row.Children.Add(standard);
-            row.Children.Add(value);
+            row.Children.Add(valueBox);
+            row.Children.Add(browse);
             row.Children.Add(remove);
             container.Children.Add(row);
         }
     }
+
+    /// <summary>Подсказка ожидаемого формата значения для каждого типа действия.</summary>
+    private static readonly Dictionary<string, string> ActionHints = new()
+    {
+        ["keys"] = L.Tr("например: ctrl+c ctrl+v"),
+        ["text"] = L.Tr("текст для ввода"),
+        ["command"] = L.Tr("команда оболочки"),
+        ["app"] = L.Tr("имя или путь к программе — удобнее кнопкой «Обзор»"),
+        ["button"] = L.Tr("left, right, middle"),
+        ["scroll"] = L.Tr("up 3, down, left 2"),
+        ["window"] = L.Tr("minimize, maximize, unmaximize, close, activate"),
+        ["delay"] = L.Tr("мс, например 200"),
+    };
 
     private static readonly List<(string Value, string Title)> ActionTypes = new()
     {
