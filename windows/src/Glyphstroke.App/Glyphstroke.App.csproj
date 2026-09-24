@@ -13,7 +13,7 @@
     <RootNamespace>Glyphstroke.App</RootNamespace>
     <ApplicationIcon>glyphstroke.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.0.8</Version>
+    <Version>1.0.9</Version>
     <Product>Glyphstroke</Product>
     <Company>runetrace</Company>
     <Description>Управление устройством жестами</Description>

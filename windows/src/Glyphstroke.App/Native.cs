@@ -58,6 +58,40 @@ internal static class Native
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     public static extern IntPtr GetModuleHandle(string? name);
 
+    // --- цикл сообщений для отдельного потока перехвата ---
+    // Хук WH_MOUSE_LL шлёт колбэк на тот поток, что его поставил, и этот поток
+    // обязан крутить очередь сообщений. Мы отводим под это отдельный поток, чтобы
+    // занятость интерфейса никогда не морозила мышь во всей системе.
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MSG
+    {
+        public IntPtr Hwnd;
+        public uint Message;
+        public IntPtr WParam;
+        public IntPtr LParam;
+        public uint Time;
+        public POINT Point;
+    }
+
+    public const uint WM_QUIT = 0x0012;
+
+    [DllImport("user32.dll")]
+    public static extern int GetMessage(out MSG msg, IntPtr hwnd, uint filterMin, uint filterMax);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool TranslateMessage(ref MSG msg);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr DispatchMessage(ref MSG msg);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool PostThreadMessage(uint threadId, uint msg, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("kernel32.dll")]
+    public static extern uint GetCurrentThreadId();
+
     // --- отправка ввода ---
     public const int INPUT_MOUSE = 0;
     public const int INPUT_KEYBOARD = 1;

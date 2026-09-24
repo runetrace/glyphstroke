@@ -90,7 +90,7 @@ glyphstroke gui             # редактор жестов
 
 ```bash
 ./packaging/build-deb.sh                       # соберёт dist/glyphstroke_ВЕРСИЯ_all.deb
-sudo apt install ./dist/glyphstroke_1.0.8_all.deb
+sudo apt install ./dist/glyphstroke_1.0.9_all.deb
 ```
 
 Пакет кладёт код в `/usr/lib/glyphstroke`, команды `glyphstroke` и `glyphstroked` — в

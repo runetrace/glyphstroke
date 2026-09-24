@@ -33,6 +33,7 @@ public sealed class TrayApp : IDisposable
     private HelpWindow? _help;
     private SettingsWindow? _settings;
     private readonly List<string> _log = new();
+    private readonly object _logLock = new();
     private System.Windows.Forms.Timer? _updateTimer;
 
     public static string Version =>
@@ -178,18 +179,28 @@ public sealed class TrayApp : IDisposable
     private void ShowLog()
     {
         string path = Path.Combine(Path.GetTempPath(), L.Tr("glyphstroke-журнал.txt"));
-        File.WriteAllText(path, string.Join(Environment.NewLine, _log));
+        string text;
+        lock (_logLock)
+        {
+            text = string.Join(Environment.NewLine, _log);
+        }
+        File.WriteAllText(path, text);
         Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
     }
 
+    // Журнал пишется и с потока перехвата (через OnLog), и с потока интерфейса,
+    // поэтому доступ к списку под замком.
     private void Append(string message)
     {
-        _log.Add($"{DateTime.Now:HH:mm:ss}  {message}");
-        // Журнал нужен для разбора «почему не сработало», а не для истории:
-        // держим последние двести строк и не растём в памяти.
-        if (_log.Count > 200)
+        lock (_logLock)
         {
-            _log.RemoveRange(0, _log.Count - 200);
+            _log.Add($"{DateTime.Now:HH:mm:ss}  {message}");
+            // Журнал нужен для разбора «почему не сработало», а не для истории:
+            // держим последние двести строк и не растём в памяти.
+            if (_log.Count > 200)
+            {
+                _log.RemoveRange(0, _log.Count - 200);
+            }
         }
     }
 

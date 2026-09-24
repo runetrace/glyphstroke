@@ -89,7 +89,7 @@ releases come from is the `update_repo` setting — «owner/repository» on GitH
 
 ```bash
 ./packaging/build-deb.sh                       # builds dist/glyphstroke_VERSION_all.deb
-sudo apt install ./dist/glyphstroke_1.0.8_all.deb
+sudo apt install ./dist/glyphstroke_1.0.9_all.deb
 ```
 
 The package puts the code into `/usr/lib/glyphstroke`, the `glyphstroke` and `glyphstroked`

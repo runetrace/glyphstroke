@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Threading;
 using Glyphstroke.Core;
 
 namespace Glyphstroke.App;
@@ -51,6 +52,11 @@ public sealed class MouseHook : IDisposable
     private bool _pressing;
     private Native.POINT _pressLocation;
 
+    private Thread? _thread;
+    private uint _threadId;
+    private int _startError;
+    private readonly ManualResetEventSlim _started = new(false);
+
     /// <summary>Пауза: события проходят насквозь, как будто программы нет.</summary>
     public bool Paused { get; set; }
 
@@ -65,28 +71,70 @@ public sealed class MouseHook : IDisposable
         _callback = Callback;
     }
 
-    /// <summary>Включить перехват. Ставится на поток с очередью сообщений.</summary>
+    /// <summary>Включить перехват на ОТДЕЛЬНОМ потоке с собственной очередью.</summary>
+    /// <remarks>
+    /// Колбэк хука приходит на тот поток, что поставил хук. Раньше это был
+    /// поток интерфейса — и любая его занятость (открытый редактор, диалог,
+    /// пауза сборки мусора) задерживала колбэк, а задержанный глобальный хук
+    /// морозит мышь во ВСЕЙ системе, вплоть до «не снять из диспетчера». Теперь
+    /// хук живёт на своём потоке и от интерфейса не зависит.
+    /// </remarks>
     public void Start()
     {
-        if (_hook != IntPtr.Zero)
+        if (_thread is not null)
         {
             return;
         }
-        _hook = Native.SetWindowsHookEx(Native.WH_MOUSE_LL, _callback, Native.GetModuleHandle(null), 0);
+        _started.Reset();
+        _thread = new Thread(Pump) { IsBackground = true, Name = "GlyphstrokeMouseHook" };
+        _thread.SetApartmentState(ApartmentState.STA);
+        _thread.Start();
+        _started.Wait(3000);
         if (_hook == IntPtr.Zero)
         {
+            _thread = null;
             throw new InvalidOperationException(
-                L.Tr("Не удалось поставить перехват мыши: ") + Marshal.GetLastWin32Error());
+                L.Tr("Не удалось поставить перехват мыши: ") + _startError);
         }
     }
 
-    public void Stop()
+    /// <summary>Тело потока перехвата: ставим хук и крутим очередь сообщений.</summary>
+    private void Pump()
     {
+        _threadId = Native.GetCurrentThreadId();
+        _hook = Native.SetWindowsHookEx(Native.WH_MOUSE_LL, _callback, Native.GetModuleHandle(null), 0);
+        _startError = Marshal.GetLastWin32Error();
+        _started.Set();
+        if (_hook == IntPtr.Zero)
+        {
+            return;
+        }
+        while (Native.GetMessage(out var msg, IntPtr.Zero, 0, 0) > 0)
+        {
+            Native.TranslateMessage(ref msg);
+            Native.DispatchMessage(ref msg);
+        }
         if (_hook != IntPtr.Zero)
         {
             Native.UnhookWindowsHookEx(_hook);
             _hook = IntPtr.Zero;
         }
+    }
+
+    public void Stop()
+    {
+        var thread = _thread;
+        if (thread is null)
+        {
+            return;
+        }
+        _thread = null;
+        if (_threadId != 0)
+        {
+            Native.PostThreadMessage(_threadId, Native.WM_QUIT, IntPtr.Zero, IntPtr.Zero);
+        }
+        thread.Join(3000);
+        _threadId = 0;
         _pressing = false;
     }
 
