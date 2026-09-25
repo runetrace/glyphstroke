@@ -18,7 +18,7 @@ public sealed class ActionRunner
 {
     public Action<string>? OnLog { get; set; }
 
-    public void Run(IReadOnlyList<GestureAction> actions)
+    public void Run(IReadOnlyList<GestureAction> actions, IntPtr targetWindow = default)
     {
         if (actions.Count == 0)
         {
@@ -27,11 +27,18 @@ public sealed class ActionRunner
         var copy = actions.ToList();
         Task.Run(() =>
         {
+            // Действия применяются к окну ПОД росчерком, а не к активному. Если это
+            // другое окно — выводим его вперёд, чтобы клавиши, текст и оконные
+            // команды попали именно в него.
+            if (targetWindow != IntPtr.Zero && targetWindow != Native.GetForegroundWindow())
+            {
+                Native.SetForegroundWindow(targetWindow);
+            }
             foreach (var action in copy)
             {
                 try
                 {
-                    RunOne(action);
+                    RunOne(action, targetWindow);
                 }
                 catch (Exception exception)
                 {
@@ -41,18 +48,18 @@ public sealed class ActionRunner
         });
     }
 
-    private void RunOne(GestureAction action)
+    private void RunOne(GestureAction action, IntPtr targetWindow)
     {
         switch (action.Type)
         {
-            case "standard": RunStandard(action.Value); break;
+            case "standard": RunStandard(action.Value, targetWindow); break;
             case "keys": SendKeys(action.Value); break;
             case "text": SendText(action.Value); break;
             case "command": RunCommand(action.Value); break;
             case "app": OpenApp(action.Value); break;
             case "button": ClickButton(action.Value); break;
             case "scroll": Scroll(action.Value); break;
-            case "window": WindowCommand(action.Value); break;
+            case "window": WindowCommand(action.Value, targetWindow); break;
             case "delay": Thread.Sleep(Math.Max(0, ParseInt(action.Value))); break;
             case "none":
             case "": break;
@@ -65,7 +72,7 @@ public sealed class ActionRunner
     /// Разворот здесь, а не при чтении файла, намеренно: в файле жеста остаётся
     /// имя, и тот же файл на другой системе выполнит её собственное сочетание.
     /// </remarks>
-    private void RunStandard(string value)
+    private void RunStandard(string value, IntPtr targetWindow)
     {
         var action = StandardActions.Find(value);
         if (action is null)
@@ -79,7 +86,7 @@ public sealed class ActionRunner
         }
         else
         {
-            WindowCommand(action.Value);
+            WindowCommand(action.Value, targetWindow);
         }
     }
 
@@ -236,10 +243,11 @@ public sealed class ActionRunner
     // --- окна ---
 
     /// <summary>minimize | maximize | unmaximize | close | activate.</summary>
-    private void WindowCommand(string value)
+    private void WindowCommand(string value, IntPtr targetWindow)
     {
         string command = value.Trim().ToLowerInvariant();
-        IntPtr window = Native.GetForegroundWindow();
+        // Цель — окно под росчерком; если его нет, откатываемся на активное.
+        IntPtr window = targetWindow != IntPtr.Zero ? targetWindow : Native.GetForegroundWindow();
         if (window == IntPtr.Zero)
         {
             Log(L.Tr("не вижу активного окна"));

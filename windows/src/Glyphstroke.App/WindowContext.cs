@@ -55,6 +55,24 @@ public static class WindowContext
         return title.Length == 0 ? process : $"{process} | {title}";
     }
 
+    /// <summary>Верхнеуровневое окно под точкой экрана — цель жеста.</summary>
+    /// <remarks>
+    /// Действие жеста применяется к окну, над которым НАЧАЛСЯ росчерк, а не к
+    /// тому, что было активным: перехватчик глотает нажатие правой кнопки, и
+    /// окно под курсором само на передний план не выходит, поэтому цель надо
+    /// определить по точке начала.
+    /// </remarks>
+    internal static IntPtr WindowUnder(int x, int y)
+    {
+        IntPtr window = Native.WindowFromPoint(new Native.POINT { X = x, Y = y });
+        if (window == IntPtr.Zero)
+        {
+            return IntPtr.Zero;
+        }
+        IntPtr root = Native.GetAncestor(window, Native.GA_ROOT);
+        return root == IntPtr.Zero ? window : root;
+    }
+
     /// <summary>Имя процесса окна под точкой экрана — для мишени выбора программы.</summary>
     internal static string? ProcessUnder(Native.POINT point)
     {

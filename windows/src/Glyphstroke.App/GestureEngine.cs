@@ -23,6 +23,7 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
 
     private readonly List<Point> _stroke = new();
     private string? _strokeApp;
+    private IntPtr _targetWindow;   // окно под началом росчерка — цель действий
 
     public Action<string>? OnLog { get; set; }
     public Action<Match>? OnRecognized { get; set; }
@@ -89,6 +90,8 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
     {
         _stroke.Clear();
         _strokeApp = WindowContext.Current();
+        // Цель действий — окно под точкой начала росчерка, а не активное окно.
+        _targetWindow = WindowContext.WindowUnder((int)point.X, (int)point.Y);
 
         // Исключённые и полноэкранные — не наш случай: возвращаем false, и
         // перехватчик отдаёт нажатие программе как есть (без глотания и подмены).
@@ -161,9 +164,10 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
             Native.GetCursorPos(out var at);
             var items = gesture.Menu.ToList();
             int timeout = _settings.MenuTimeoutMs;
+            var target = _targetWindow;
             _trail.Dispatcher.InvokeAsync(() =>
             {
-                var overlay = new MenuOverlay(items, at, timeout, item => _actions.Run(item.Actions));
+                var overlay = new MenuOverlay(items, at, timeout, item => _actions.Run(item.Actions, target));
                 overlay.Show();
                 overlay.Activate();
             });
@@ -172,7 +176,8 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
         // Действия — в фоновый поток: они могут запускать программы и слать
         // ввод, и держать на этом колбэк хука нельзя (замёрзнет мышь всей системы).
         var actions = gesture.Actions.ToList();
-        Task.Run(() => _actions.Run(actions));
+        var target = _targetWindow;
+        Task.Run(() => _actions.Run(actions, target));
         return true;
     }
 

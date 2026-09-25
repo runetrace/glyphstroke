@@ -5,7 +5,7 @@
 (и поле ``version`` в pyproject.toml).
 """
 
-__version__ = "1.0.9"
+__version__ = "1.0.10"
 
 #: дата последнего обновления, ISO
 RELEASE_DATE = "2026-09-13"
