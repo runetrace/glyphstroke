@@ -23,6 +23,9 @@ public final class GestureEngine: MouseTapDelegate {
     /// Приложение, которое было впереди в момент нажатия. Спрашиваем один раз:
     /// пока рисуется росчерк, оно поменяться не может, а опрос не бесплатный.
     private var strokeApp: String?
+    /// Окно (его приложение) под точкой начала росчерка — цель действий, а не
+    /// то приложение, что было активным.
+    private var targetPid: pid_t = 0
 
     /// Куда писать происходящее — в журнал приложения и в окно проверки.
     public var onLog: ((String) -> Void)?
@@ -78,6 +81,8 @@ public final class GestureEngine: MouseTapDelegate {
 
     public func tapDidBeginStroke(at point: Point) {
         strokeApp = WindowContext.current()
+        // Цель действий — приложение под точкой начала росчерка (себя исключаем).
+        targetPid = WindowContext.pidUnderCursor(excluding: ProcessInfo.processInfo.processIdentifier) ?? 0
 
         // Исключённые программы: в них мышь не трогаем вовсе. Проверка именно
         // здесь, а не при выполнении, — иначе в чужом окне пропадал бы щелчок.
@@ -133,18 +138,19 @@ public final class GestureEngine: MouseTapDelegate {
             let items = gesture.menu
             let timeout = settings.menuTimeoutMs
             let runner = actions
+            let target = targetPid
             // Меню крутит собственный цикл событий, поэтому показываем его
             // следующим шагом: сначала перехват должен отпустить обработку
             // щелчка, иначе мышь замрёт до закрытия меню.
             DispatchQueue.main.async {
                 GestureMenu.show(items: items, timeoutMs: timeout) { list in
-                    runner.run(list)
+                    runner.run(list, targetPid: target)
                 }
             }
             return true
         }
 
-        actions.run(gesture.actions)
+        actions.run(gesture.actions, targetPid: targetPid)
         return true
     }
 

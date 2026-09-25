@@ -107,6 +107,31 @@ public enum WindowContext {
         return nil
     }
 
+    /// PID приложения, чьё окно сейчас под курсором, — цель действий жеста.
+    public static func pidUnderCursor(excluding pid: pid_t = 0) -> pid_t? {
+        guard let point = CGEvent(source: nil)?.location else { return nil }
+        return ownerPid(at: point, excluding: pid)
+    }
+
+    /// PID владельца верхнего окна под точкой (координаты CoreGraphics).
+    public static func ownerPid(at point: CGPoint, excluding pid: pid_t) -> pid_t? {
+        let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
+        guard let list = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
+            return nil
+        }
+        for info in list {
+            guard let layer = info[kCGWindowLayer as String] as? Int, layer == 0,
+                  let owner = info[kCGWindowOwnerPID as String] as? pid_t, owner != pid,
+                  let raw = info[kCGWindowBounds as String] as? NSDictionary,
+                  let bounds = CGRect(dictionaryRepresentation: raw),
+                  bounds.contains(point) else {
+                continue
+            }
+            return owner
+        }
+        return nil
+    }
+
     /// Развёрнуто ли активное окно во весь экран — для настройки
     /// «отключаться в полноэкранных».
     public static func isFrontmostFullscreen() -> Bool {

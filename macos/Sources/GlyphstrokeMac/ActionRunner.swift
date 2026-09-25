@@ -38,16 +38,24 @@ public final class ActionRunner {
     public init() {}
 
     /// Выполнить список действий по порядку, не задерживая вызывающего.
-    public func run(_ actions: [Action]) {
+    public func run(_ actions: [Action], targetPid: pid_t = 0) {
         guard !actions.isEmpty else { return }
         queue.async { [weak self] in
+            // Действия применяются к окну ПОД росчерком, а не к активному: если
+            // цель известна, выводим её приложение вперёд, чтобы клавиши и текст
+            // попали именно в него.
+            if targetPid != 0 {
+                DispatchQueue.main.sync {
+                    NSRunningApplication(processIdentifier: targetPid)?.activate(options: [])
+                }
+            }
             for action in actions {
-                self?.runOne(action)
+                self?.runOne(action, targetPid: targetPid)
             }
         }
     }
 
-    private func runOne(_ action: Action) {
+    private func runOne(_ action: Action, targetPid: pid_t) {
         switch action.type {
         case "keys": sendKeys(action.value)
         case "text": sendText(action.value)
@@ -55,8 +63,8 @@ public final class ActionRunner {
         case "app": openApp(action.value)
         case "button": clickButton(action.value)
         case "scroll": scroll(action.value)
-        case "window": windowCommand(action.value)
-        case "standard": runStandard(action.value)
+        case "window": windowCommand(action.value, targetPid: targetPid)
+        case "standard": runStandard(action.value, targetPid: targetPid)
         case "delay": Thread.sleep(forTimeInterval: max(0, Double(action.value) ?? 0) / 1000.0)
         case "none", "": break
         default: log("неизвестный тип действия: \(action.type)")
@@ -67,14 +75,14 @@ public final class ActionRunner {
     ///
     /// Разворот здесь, а не при чтении файла, намеренно: в файле жеста
     /// остаётся имя, и тот же файл на Linux выполнит его собственное сочетание.
-    private func runStandard(_ value: String) {
+    private func runStandard(_ value: String, targetPid: pid_t) {
         guard let entry = StandardActions.entry(value) else {
             log("не знаю такого стандартного действия: \(value)")
             return
         }
         switch entry.kind {
         case .keys: sendKeys(entry.value)
-        case .window: windowCommand(entry.value)
+        case .window: windowCommand(entry.value, targetPid: targetPid)
         }
     }
 
@@ -199,13 +207,16 @@ public final class ActionRunner {
     // MARK: - Окна
 
     /// minimize | close | activate | fullscreen — через Универсальный доступ.
-    private func windowCommand(_ value: String) {
+    private func windowCommand(_ value: String, targetPid: pid_t) {
         let command = value.trimmingCharacters(in: .whitespaces).lowercased()
         guard Permissions.hasAccessibility else {
             log("действие «окно: \(command)» требует Универсального доступа")
             return
         }
-        guard let app = NSWorkspace.shared.frontmostApplication else { return }
+        // Цель — приложение окна под росчерком; если не определили, откатываемся
+        // на активное.
+        guard let app = (targetPid != 0 ? NSRunningApplication(processIdentifier: targetPid) : nil)
+            ?? NSWorkspace.shared.frontmostApplication else { return }
 
         if command == "activate" {
             app.activate(options: [])
