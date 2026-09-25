@@ -176,8 +176,8 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
         // Действия — в фоновый поток: они могут запускать программы и слать
         // ввод, и держать на этом колбэк хука нельзя (замёрзнет мышь всей системы).
         var actions = gesture.Actions.ToList();
-        var target = _targetWindow;
-        Task.Run(() => _actions.Run(actions, target));
+        var winTarget = _targetWindow;
+        Task.Run(() => _actions.Run(actions, winTarget));
         return true;
     }
 
