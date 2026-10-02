@@ -157,7 +157,13 @@ public sealed class Settings
     public double MinMargin { get; set; } = 0.05;
 
     /// <summary>Что делать с неопознанным росчерком: passthrough | swallow.</summary>
-    public string Unrecognized { get; set; } = "passthrough";
+    /// <remarks>
+    /// По умолчанию — сбросить и ждать следующего росчерка: правый щелчок,
+    /// отданный программе после длинной фигуры, открывает контекстное меню в
+    /// случайном месте. Короткое движение (меньше <see cref="MinStrokePx"/>)
+    /// остаётся обычным щелчком при любой настройке.
+    /// </remarks>
+    public string Unrecognized { get; set; } = "swallow";
 
     public List<string> ExcludedApps { get; set; } = new();
     public bool PauseInFullscreen { get; set; } = false;

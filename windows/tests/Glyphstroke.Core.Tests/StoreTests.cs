@@ -126,6 +126,24 @@ public class StoreTests : IDisposable
     }
 
     [Fact]
+    public void OldPassthroughDefaultBecomesReset()
+    {
+        // Файл до 1.0.12: «passthrough» попадал туда при любом сохранении.
+        var store = NewStore();
+        Directory.CreateDirectory(store.Root);
+        File.WriteAllText(store.SettingsPath, "unrecognized: \"passthrough\"\n");
+        Assert.Equal("swallow", store.LoadSettings().Unrecognized);
+    }
+
+    [Fact]
+    public void ChosenPassthroughSurvivesSaveAndLoad()
+    {
+        var store = NewStore();
+        store.SaveSettings(new Settings { Unrecognized = "passthrough" });
+        Assert.Equal("passthrough", NewStore().LoadSettings().Unrecognized);
+    }
+
+    [Fact]
     public void ForeignKeysSurviveARoundTrip()
     {
         // Файл настроек ездит между системами: ключи Linux (устройства ввода,

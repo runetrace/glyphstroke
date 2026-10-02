@@ -56,7 +56,6 @@ public sealed class MouseHook : IDisposable
     private IntPtr _hook = IntPtr.Zero;
 
     private bool _pressing;
-    private Native.POINT _pressLocation;
 
     private Thread? _thread;
     private uint _threadId;
@@ -234,7 +233,6 @@ public sealed class MouseHook : IDisposable
 
         if (message == DownMessage)
         {
-            _pressLocation = data.Point;
             // Спрашиваем слушателя, наш ли это случай. Если нет (исключённая
             // программа, полноэкранное) — отдаём нажатие программе как есть,
             // ничего не глотаем и не подменяем.
@@ -269,8 +267,13 @@ public sealed class MouseHook : IDisposable
             if (!swallowed)
             {
                 // Жеста не вышло — возвращаем программе обычный щелчок кнопкой-
-                // модификатором.
-                ReplayClick(_pressLocation);
+                // модификатором. НЕ отсюда: щелчок, посланный SendInput, сам
+                // идёт через этот же хук, а он ждёт, пока мы вернёмся. Windows
+                // дожидается тайм-аута и снимает хук — программа на пару секунд
+                // переставала видеть мышь после каждого неопознанного росчерка.
+                // Поэтому щелчок уходит из другого потока, когда колбэк уже вернулся.
+                uint down = DownFlag, up = UpFlag;
+                ThreadPool.QueueUserWorkItem(_ => ReplayClick(down, up));
             }
             return new IntPtr(1);
         }
@@ -279,16 +282,15 @@ public sealed class MouseHook : IDisposable
     }
 
     /// <summary>Отправить системе щелчок кнопкой-модификатором.</summary>
-    /// <summary>Отправить системе щелчок кнопкой-модификатором.</summary>
     /// <remarks>
     /// Щелчок уходит туда, где сейчас курсор (там, где кнопку отпустили).
     /// Возвращать курсор к точке нажатия нельзя: этот прыжок туда-обратно
-    /// человек видит как дёрганье указателя.
+    /// человек видит как дёрганье указателя. Звать только НЕ с потока хука.
     /// </remarks>
-    private void ReplayClick(Native.POINT where)
+    private static void ReplayClick(uint downFlag, uint upFlag)
     {
-        SendMouse(DownFlag);
-        SendMouse(UpFlag);
+        SendMouse(downFlag);
+        SendMouse(upFlag);
     }
 
     private static void SetCursor(Native.POINT point) => SetCursorPos(point.X, point.Y);

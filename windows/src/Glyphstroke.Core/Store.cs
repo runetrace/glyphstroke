@@ -123,6 +123,14 @@ public sealed class Store
         settings.MinScore = Num(root, "min_score") ?? settings.MinScore;
         settings.MinMargin = Num(root, "min_margin") ?? settings.MinMargin;
         settings.Unrecognized = Str(root, "unrecognized") ?? settings.Unrecognized;
+        // До 1.0.12 по умолчанию стояло «отдать программе», и оно попадало в файл
+        // при любом сохранении — отличить выбор человека от старого умолчания
+        // нельзя. Файл без метки считаем старым и переводим на новое умолчание
+        // (сброс); после первого сохранения метка есть, и выбор уважается.
+        if (Bool(root, UnrecognizedMarker) != true)
+        {
+            settings.Unrecognized = new Settings().Unrecognized;
+        }
         settings.ExcludedApps = StrList(root, "excluded_apps");
         settings.PauseInFullscreen = Bool(root, "pause_in_fullscreen") ?? settings.PauseInFullscreen;
         settings.ShowGestureName = Bool(root, "show_gesture_name") ?? settings.ShowGestureName;
@@ -166,6 +174,7 @@ public sealed class Store
         text.AppendLine($"min_score: {Number(settings.MinScore)}");
         text.AppendLine($"min_margin: {Number(settings.MinMargin)}");
         text.AppendLine($"unrecognized: {Quote(settings.Unrecognized)}");
+        text.AppendLine($"{UnrecognizedMarker}: true");
         text.AppendLine("excluded_apps:" + (settings.ExcludedApps.Count == 0 ? " []" : string.Empty));
         foreach (var pattern in settings.ExcludedApps)
         {
@@ -196,10 +205,13 @@ public sealed class Store
         WriteAtomic(SettingsPath, text.ToString());
     }
 
+    /// <summary>Метка: значение «unrecognized» в файле выбрано уже при новом умолчании.</summary>
+    private const string UnrecognizedMarker = "unrecognized_v2";
+
     private static readonly HashSet<string> KnownKeys = new()
     {
         "language", "theme", "active_profile", "trigger_button", "min_stroke_px", "min_score",
-        "min_margin", "unrecognized", "excluded_apps", "pause_in_fullscreen",
+        "min_margin", "unrecognized", UnrecognizedMarker, "excluded_apps", "pause_in_fullscreen",
         "show_gesture_name", "hint_delay_ms", "menu_step_px", "menu_timeout_ms",
         "check_updates", "update_repo", "log_level", "overlay",
     };
