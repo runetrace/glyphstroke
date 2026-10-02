@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Glyphstroke.Core;
 using Point = Glyphstroke.Core.Point;
 
@@ -22,12 +23,40 @@ namespace Glyphstroke.App;
 /// масштабе 125 или 150 процентов — а на ноутбуках это норма — след без
 /// перевода поехал бы вбок тем сильнее, чем дальше от начала координат.
 /// Перевод сделан в одном месте, <see cref="ToWindow"/>.
+///
+/// <b>Точки приходят пачками.</b> Перехватчик зовёт <see cref="PostExtend"/> на
+/// каждое движение мыши — у игровых мышей это тысяча раз в секунду. Раньше
+/// каждое движение было отдельной операцией в очереди интерфейса: на длинной
+/// спирали очередь росла быстрее, чем окно успевало рисовать, след догонял
+/// курсор рывками, процессор уходил в перерисовку, а поток перехвата переставал
+/// укладываться в срок, и Windows молча снимала хук. Теперь точки копятся в
+/// буфере, в очереди всегда не больше одной операции, и за раз рисуется всё
+/// накопленное. Длина следа ограничена <see cref="MaxPoints"/>.
 /// </remarks>
 public sealed class TrailWindow : Window
 {
     private readonly Polyline _line = new();
     private readonly Canvas _canvas = new();
     private OverlaySettings _settings;
+
+    /// <summary>Потолок точек следа: дальше путь прореживается вдвое.</summary>
+    private const int MaxPoints = 1500;
+
+    /// <summary>Ближе этого (в точках окна) новая точка рисунок не меняет.</summary>
+    private const double MinStep = 2.0;
+
+    // Перевод экранных точек в точки окна, снятый в начале росчерка: искать
+    // PresentationSource на каждой точке незачем.
+    private Matrix _fromDevice = Matrix.Identity;
+    private double _originX, _originY;
+
+    // Буфер между потоком перехвата и потоком интерфейса.
+    private readonly object _pendingLock = new();
+    private readonly List<Point> _pending = new();
+    private bool _pendingBegin;
+    private Point _pendingBeginPoint;
+    private bool _pendingEnd;
+    private bool _flushScheduled;
 
     public TrailWindow(OverlaySettings settings)
     {
@@ -63,6 +92,114 @@ public sealed class TrailWindow : Window
         }
     }
 
+    // --- вызовы с потока перехвата ---
+
+    /// <summary>Начать след. Можно звать с любого потока.</summary>
+    public void PostBegin(Point point)
+    {
+        lock (_pendingLock)
+        {
+            _pending.Clear();
+            _pendingBegin = true;
+            _pendingBeginPoint = point;
+            _pendingEnd = false;
+            ScheduleFlush();
+        }
+    }
+
+    /// <summary>Продолжить след. Можно звать с любого потока.</summary>
+    public void PostExtend(Point point)
+    {
+        lock (_pendingLock)
+        {
+            // Если интерфейс совсем встал, буфер не должен расти без конца:
+            // для рисунка хватит и прореженного пути.
+            if (_pending.Count >= MaxPoints * 4)
+            {
+                Thin(_pending);
+            }
+            _pending.Add(point);
+            ScheduleFlush();
+        }
+    }
+
+    /// <summary>Закончить след. Можно звать с любого потока.</summary>
+    public void PostEnd()
+    {
+        lock (_pendingLock)
+        {
+            _pendingEnd = true;
+            ScheduleFlush();
+        }
+    }
+
+    /// <summary>Поставить в очередь одну операцию на всю пачку (под замком).</summary>
+    /// <remarks>
+    /// Приоритет ниже отрисовки: пока окно рисует, точки копятся, и следующий
+    /// проход забирает их разом.
+    /// </remarks>
+    private void ScheduleFlush()
+    {
+        if (_flushScheduled)
+        {
+            return;
+        }
+        _flushScheduled = true;
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(Flush));
+    }
+
+    private void Flush()
+    {
+        bool begin, end;
+        Point beginPoint;
+        Point[] points;
+        lock (_pendingLock)
+        {
+            _flushScheduled = false;
+            begin = _pendingBegin;
+            beginPoint = _pendingBeginPoint;
+            end = _pendingEnd;
+            points = _pending.ToArray();
+            _pending.Clear();
+            _pendingBegin = false;
+            _pendingEnd = false;
+        }
+        if (begin)
+        {
+            Begin(beginPoint);
+        }
+        foreach (var point in points)
+        {
+            Extend(point);
+        }
+        if (end)
+        {
+            End();
+        }
+    }
+
+    /// <summary>Выкинуть каждую вторую точку, сохранив последнюю.</summary>
+    private static void Thin(List<Point> points)
+    {
+        if (points.Count < 3)
+        {
+            return;
+        }
+        var last = points[^1];
+        int write = 0;
+        for (int read = 0; read < points.Count; read += 2)
+        {
+            points[write++] = points[read];
+        }
+        points.RemoveRange(write, points.Count - write);
+        if (points[^1] != last)
+        {
+            points.Add(last);
+        }
+    }
+
+    // --- работа на потоке интерфейса ---
+
     public void Begin(Point point)
     {
         if (!_settings.Enabled)
@@ -70,6 +207,10 @@ public sealed class TrailWindow : Window
             return;
         }
         CoverAllScreens();
+        var source = PresentationSource.FromVisual(this);
+        _fromDevice = source?.CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
+        _originX = Left;
+        _originY = Top;
         _line.BeginAnimation(OpacityProperty, null);
         _line.Opacity = _settings.Opacity;
         _line.Points = new PointCollection { ToWindow(point) };
@@ -86,10 +227,21 @@ public sealed class TrailWindow : Window
         }
         var converted = ToWindow(point);
         var last = _line.Points[^1];
-        // Точки в один пиксель только утяжеляют путь, рисунок от них не меняется.
-        if (Math.Abs(converted.X - last.X) < 1 && Math.Abs(converted.Y - last.Y) < 1)
+        // Точки в пару пикселей только утяжеляют путь, рисунок от них не меняется.
+        if (Math.Abs(converted.X - last.X) < MinStep && Math.Abs(converted.Y - last.Y) < MinStep)
         {
             return;
+        }
+        if (_line.Points.Count >= MaxPoints)
+        {
+            // Длинная спираль: прореживаем уже нарисованное, а не копим тысячи
+            // точек, каждую из которых окно перерисовывает целиком.
+            var thinned = new PointCollection(MaxPoints / 2 + 2);
+            for (int i = 0; i < _line.Points.Count; i += 2)
+            {
+                thinned.Add(_line.Points[i]);
+            }
+            _line.Points = thinned;
         }
         _line.Points.Add(converted);
     }
@@ -153,14 +305,11 @@ public sealed class TrailWindow : Window
     }
 
     /// <summary>Точка экрана → точка внутри окна, с поправкой на масштаб.</summary>
+    /// <remarks>Преобразование снимается в <see cref="Begin"/>.</remarks>
     private System.Windows.Point ToWindow(Point point)
     {
-        var source = PresentationSource.FromVisual(this);
-        var device = new System.Windows.Point(point.X, point.Y);
-        var scaled = source?.CompositionTarget is not null
-            ? source.CompositionTarget.TransformFromDevice.Transform(device)
-            : device;
-        return new System.Windows.Point(scaled.X - Left, scaled.Y - Top);
+        var scaled = _fromDevice.Transform(new System.Windows.Point(point.X, point.Y));
+        return new System.Windows.Point(scaled.X - _originX, scaled.Y - _originY);
     }
 
     /// <summary><c>#4da3ff</c> → цвет. Негодная запись не должна оставлять след

@@ -1,3 +1,4 @@
+using System.Windows.Threading;
 using Glyphstroke.Core;
 
 namespace Glyphstroke.App;
@@ -24,6 +25,9 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
     private readonly List<Point> _stroke = new();
     private string? _strokeApp;
     private IntPtr _targetWindow;   // окно под началом росчерка — цель действий
+
+    // Сторож: ставит хук заново, если система сняла его молча.
+    private DispatcherTimer? _watchdog;
 
     public Action<string>? OnLog { get; set; }
     public Action<Match>? OnRecognized { get; set; }
@@ -74,12 +78,45 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
     {
         _hook.Start();
         Log($"перехват включён, кнопка-модификатор: {_settings.TriggerButton}");
+        if (_watchdog is null)
+        {
+            _watchdog = new DispatcherTimer(DispatcherPriority.Background, _trail.Dispatcher)
+            {
+                Interval = TimeSpan.FromSeconds(1),
+            };
+            _watchdog.Tick += (_, _) => CheckHook();
+        }
+        _watchdog.Start();
     }
 
     public void Stop()
     {
+        _watchdog?.Stop();
         _hook.Stop();
         _trail.Cancel();
+    }
+
+    /// <summary>Если хук снят системой — поставить заново.</summary>
+    /// <remarks>
+    /// Так программа сама выходит из состояния «работает, но жесты не рисует»,
+    /// в которое раньше попадала после любого долгого подвисания.
+    /// </remarks>
+    private void CheckHook()
+    {
+        if (!_hook.LooksDead())
+        {
+            return;
+        }
+        try
+        {
+            _hook.Restart();
+            _trail.Cancel();
+            Log("перехват мыши снят системой (обработчик не успел ответить) — поставлен заново");
+        }
+        catch (Exception exception)
+        {
+            Log("перехват не удалось поставить заново: " + exception.Message);
+        }
     }
 
     public void Dispose() => Stop();
@@ -106,8 +143,8 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
 
         _stroke.Add(point);
         Rebuild(_strokeApp);
-        // НЕ блокируем колбэк хука: рисуем след асинхронно.
-        _trail.Dispatcher.InvokeAsync(() => _trail.Begin(point));
+        // НЕ блокируем колбэк хука: след рисуется пачками на потоке интерфейса.
+        _trail.PostBegin(point);
         return true;
     }
 
@@ -118,7 +155,7 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
             return;
         }
         _stroke.Add(point);
-        _trail.Dispatcher.InvokeAsync(() => _trail.Extend(point));
+        _trail.PostExtend(point);
     }
 
     public bool StrokeEnded(Point point)
@@ -128,7 +165,7 @@ public sealed class GestureEngine : IMouseHookListener, IDisposable
             return false;
         }
         _stroke.Add(point);
-        _trail.Dispatcher.InvokeAsync(() => _trail.End());
+        _trail.PostEnd();
 
         double length = Geometry.PathLength(_stroke);
         var stroke = _stroke.ToList();

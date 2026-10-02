@@ -37,6 +37,10 @@ public static class Program
             return;
         }
 
+        // Длинные блокирующие сборки мусора останавливают все управляемые потоки,
+        // в том числе поток перехвата мыши, — а задержанный хук Windows снимает.
+        System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.SustainedLowLatency;
+
         var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         Theme.Install(application, new Glyphstroke.Core.Store().LoadSettings().Theme);
         var tray = new TrayApp();

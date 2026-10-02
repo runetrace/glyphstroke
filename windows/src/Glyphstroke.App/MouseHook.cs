@@ -42,6 +42,12 @@ public interface IMouseHookListener
 /// <b>Делегат нужно держать за руку.</b> Если ссылку на него не сохранить,
 /// сборщик мусора уберёт его, а система продолжит звать по адресу — это падение
 /// без внятного следа, причём случайное по времени.
+///
+/// <b>Система может снять хук молча.</b> Если обработчик хоть раз не уложился
+/// в срок (процессор занят, пауза сборки мусора), Windows 7 и новее просто
+/// выкидывает хук — без ошибки и без уведомления. Мышь работает, а жесты нет.
+/// Поэтому <see cref="LooksDead"/> сверяет движение курсора с тем, доходят ли
+/// события до хука, и по её ответу хук ставится заново.
 /// </remarks>
 public sealed class MouseHook : IDisposable
 {
@@ -56,6 +62,12 @@ public sealed class MouseHook : IDisposable
     private uint _threadId;
     private int _startError;
     private readonly ManualResetEventSlim _started = new(false);
+
+    // Когда хук последний раз получил событие (Environment.TickCount64).
+    private long _lastEventTick;
+    // Где был курсор на прошлой проверке и сколько проверок подряд хук молчал.
+    private Native.POINT _checkedCursor;
+    private int _silentChecks;
 
     /// <summary>Пауза: события проходят насквозь, как будто программы нет.</summary>
     public bool Paused { get; set; }
@@ -86,10 +98,20 @@ public sealed class MouseHook : IDisposable
             return;
         }
         _started.Reset();
-        _thread = new Thread(Pump) { IsBackground = true, Name = "GlyphstrokeMouseHook" };
+        // Высокий приоритет: обработчик обязан успевать, даже когда процессор
+        // занят перерисовкой или чужой программой.
+        _thread = new Thread(Pump)
+        {
+            IsBackground = true,
+            Name = "GlyphstrokeMouseHook",
+            Priority = ThreadPriority.Highest,
+        };
         _thread.SetApartmentState(ApartmentState.STA);
         _thread.Start();
         _started.Wait(3000);
+        Interlocked.Exchange(ref _lastEventTick, Environment.TickCount64);
+        _silentChecks = 0;
+        Native.GetCursorPos(out _checkedCursor);
         if (_hook == IntPtr.Zero)
         {
             _thread = null;
@@ -140,12 +162,49 @@ public sealed class MouseHook : IDisposable
 
     public void Dispose() => Stop();
 
+    /// <summary>Снять хук и поставить заново.</summary>
+    public void Restart()
+    {
+        Stop();
+        Start();
+    }
+
+    /// <summary>
+    /// Похоже ли, что система сняла хук. Звать раз в секунду с потока интерфейса.
+    /// </summary>
+    /// <remarks>
+    /// Признак — курсор двигается, а до хука не доходит ни одного события. Одной
+    /// такой проверки мало: курсор может переставить программа (SetCursorPos
+    /// хук не видит), поэтому нужно две подряд — снятый хук сам не вернётся, а
+    /// разовый перенос курсора не повторится.
+    /// </remarks>
+    public bool LooksDead()
+    {
+        if (_thread is null || !Native.GetCursorPos(out var cursor))
+        {
+            return false;
+        }
+        bool moved = cursor.X != _checkedCursor.X || cursor.Y != _checkedCursor.Y;
+        _checkedCursor = cursor;
+        long silentFor = Environment.TickCount64 - Interlocked.Read(ref _lastEventTick);
+        if (moved && silentFor > 900)
+        {
+            _silentChecks++;
+        }
+        else if (silentFor <= 900)
+        {
+            _silentChecks = 0;
+        }
+        return _silentChecks >= 2;
+    }
+
     private IntPtr Callback(int code, IntPtr wParam, IntPtr lParam)
     {
         // Колбэк глобального хука мыши обязан вернуться быстро и НИКОГДА не
         // бросать исключение: и то и другое подвешивает обработку мыши во всей
         // системе. Поэтому тело в try/catch, а тяжёлую работу слушатель уводит
         // в другой поток.
+        Interlocked.Exchange(ref _lastEventTick, Environment.TickCount64);
         try
         {
             return Handle(code, wParam, lParam);
