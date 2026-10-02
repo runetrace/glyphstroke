@@ -188,6 +188,12 @@ internal static class Native
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     public static extern int GetWindowTextW(IntPtr window, char[] text, int count);
 
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern int GetClassNameW(IntPtr window, char[] name, int count);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetShellWindow();
+
     [DllImport("user32.dll", SetLastError = true)]
     public static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
 

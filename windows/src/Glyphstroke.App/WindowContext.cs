@@ -126,7 +126,7 @@ public static class WindowContext
     public static bool IsFullscreen()
     {
         IntPtr window = Native.GetForegroundWindow();
-        if (window == IntPtr.Zero || !Native.GetWindowRect(window, out var rect))
+        if (window == IntPtr.Zero || IsDesktop(window) || !Native.GetWindowRect(window, out var rect))
         {
             return false;
         }
@@ -142,5 +142,25 @@ public static class WindowContext
         var m = info.Monitor;
         return rect.Left <= m.Left + slack && rect.Top <= m.Top + slack
             && rect.Right >= m.Right - slack && rect.Bottom >= m.Bottom - slack;
+    }
+
+    /// <summary>Окно рабочего стола (обои и значки).</summary>
+    /// <remarks>
+    /// Рабочий стол — это окно Progman (или WorkerW, когда за обоями крутится
+    /// слайд-шоу), и оно закрывает монитор целиком вместе с панелью задач. По
+    /// признаку <see cref="IsFullscreen"/> оно неотличимо от игры, поэтому
+    /// с включённой паузой в полноэкранных жесты на рабочем столе не рисовались
+    /// вовсе. Отсеиваем его явно.
+    /// </remarks>
+    internal static bool IsDesktop(IntPtr window)
+    {
+        if (window == Native.GetShellWindow())
+        {
+            return true;
+        }
+        var buffer = new char[64];
+        int length = Native.GetClassNameW(window, buffer, buffer.Length);
+        string name = length > 0 ? new string(buffer, 0, length) : string.Empty;
+        return name is "Progman" or "WorkerW";
     }
 }
