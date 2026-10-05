@@ -25,6 +25,7 @@ shell-extension`` и сам демон, который при запуске о�
 from __future__ import annotations
 
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -76,6 +77,26 @@ def is_gnome() -> bool:
     return shutil.which("gnome-shell") is not None
 
 
+def user_extensions_disabled() -> bool | None:
+    """Стоит ли глобальный выключатель всех сторонних расширений GNOME.
+
+    ``org.gnome.shell disable-user-extensions`` = ``true`` гасит наше расширение
+    целиком: оболочка его даже не включает, в журнале пусто, значок и след молча
+    пропадают. Штатные расширения Ubuntu (док, значки стола) грузятся в обход
+    этого выключателя, поэтому выглядит, будто сломано только наше.
+
+    :return: ``True`` — выключены все; ``False`` — нет; ``None`` — не узнать.
+    """
+    if not shutil.which("gsettings"):
+        return None
+    result = subprocess.run(
+        ["gsettings", "get", "org.gnome.shell", "disable-user-extensions"],
+        capture_output=True, text=True)
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip() == "true"
+
+
 def enable_via_gsettings() -> bool:
     """Дописать расширение в org.gnome.shell enabled-extensions."""
     if not shutil.which("gsettings"):
@@ -98,8 +119,35 @@ def _parse_gsettings_list(raw: str) -> list[str]:
     return re.findall(r"'([^']+)'", raw)
 
 
+def allow_user_extensions() -> bool:
+    """Снять глобальный выключатель сторонних расширений, если он стоит.
+
+    ``disable-user-extensions = true`` не даёт оболочке включить наше расширение
+    вообще: значок и след молча пропадают (ровно этот случай у alpha-WS 05.10.2026).
+    postinst пакета от root сделать это не может — нет сессионной шины; делает
+    демон при запуске, в сеансе пользователя. Побочно включатся и другие сторонние
+    расширения пользователя — это осознанно: ставят-то инструмент, которому
+    расширение необходимо.
+
+    :return: ``True`` — выключатель снят сейчас; ``False`` — не трогали (и так снят
+             или не смогли).
+    """
+    if user_extensions_disabled() is not True or not shutil.which("gsettings"):
+        return False
+    done = subprocess.run(
+        ["gsettings", "set", "org.gnome.shell", "disable-user-extensions", "false"],
+        capture_output=True).returncode == 0
+    if done:
+        logging.getLogger(__name__).info(
+            "снят глобальный выключатель сторонних расширений GNOME "
+            "(disable-user-extensions было true)")
+    return done
+
+
 def enable() -> bool:
-    """Включить расширение: сперва штатной командой, потом прямой правкой настроек."""
+    """Включить расширение: сперва снять глобальный запрет, потом штатной командой."""
+    # Пока стоит глобальный выключатель, любая попытка включить бесполезна.
+    allow_user_extensions()
     if shutil.which("gnome-extensions"):
         result = subprocess.run(["gnome-extensions", "enable", EXTENSION_UUID],
                                 capture_output=True, text=True)
@@ -131,7 +179,10 @@ def state() -> str:
     """``не установлено`` | ``выключено`` | ``включено`` | ``неизвестно``."""
     from .i18n import _
 
-    if not extension_dir().exists():
+    # Расширение может лежать либо в домашнем каталоге (установка из исходников),
+    # либо системно в /usr/share (из .deb). Раньше проверялся только домашний —
+    # и системную копию doctor объявлял «не установлено», хотя она есть и работает.
+    if not extension_dir().exists() and not system_extension_dir().exists():
         return _("не установлено")
     if not shutil.which("gnome-extensions"):
         return _("неизвестно")

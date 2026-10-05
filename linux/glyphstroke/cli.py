@@ -950,11 +950,29 @@ def cmd_doctor(args) -> int:
                 "(glyphstroke shell-extension install); затем перезайдите в систему"
                 ).format(installed, packaged))
     elif packaged is not None and shellext.is_gnome():
-        # Обычно расширение кладёт сам демон при запуске, поэтому пустой
-        # каталог означает, что демон ещё ни разу не отработал в сеансе.
-        check(_("расширение оболочки установлено"), False,
-              _("каталога нет: запустите демон («glyphstroke service enable») или "
-                "поставьте вручную — glyphstroke shell-extension install"))
+        # Глобальный выключатель бьёт по всем сторонним расширениям сразу —
+        # проверяем до версий и включения, иначе причина «пропал значок»
+        # (расширение стоит, но GNOME его не включает) остаётся невидимой.
+        if shellext.user_extensions_disabled():
+            check(_("сторонние расширения GNOME разрешены"), False,
+                  _("все пользовательские расширения отключены глобально — "
+                    "значок и след не появятся; включите: "
+                    "gsettings set org.gnome.shell disable-user-extensions false"))
+        if shellext.system_extension_dir().exists():
+            # Системная копия из .deb: поле version в metadata всегда 1, сверять
+            # версии бессмысленно — важно, включена ли она. Выключенное расширение
+            # и есть «пропал значок в трее».
+            check(_("расширение оболочки включено"),
+                  extension_state() == _("включено"),
+                  _("установлено системно, но {0}: включите — "
+                    "gnome-extensions enable {1} (или glyphstroke shell-extension install)"
+                    ).format(extension_state(), EXTENSION_UUID))
+        else:
+            # Обычно расширение кладёт сам демон при запуске, поэтому пустой
+            # каталог означает, что демон ещё ни разу не отработал в сеансе.
+            check(_("расширение оболочки установлено"), False,
+                  _("каталога нет: запустите демон («glyphstroke service enable») или "
+                    "поставьте вручную — glyphstroke shell-extension install"))
     pending = update.pending()
     if pending is not None:
         print(_("[i] вышла версия {0} (установлена {1}): {2}").format(

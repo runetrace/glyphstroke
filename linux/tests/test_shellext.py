@@ -148,3 +148,63 @@ def test_daemon_sets_up_the_extension_before_it_starts_listening():
     from glyphstroke.daemon import Daemon
     body = inspect.getsource(Daemon.run)
     assert "self.ensure_shell_extension()" in body
+
+
+def test_state_sees_system_copy(home, monkeypatch):
+    """Системная копия в /usr/share — это «установлено», а не «не установлено».
+
+    Раньше state() смотрел только домашний каталог, и расширение из .deb
+    (лежит в /usr/share, домашней копии нет) doctor объявлял ненайденным —
+    из-за этого «пропал значок» выглядело как «расширение не стоит».
+    """
+    system = home / "usr-share" / shellext.EXTENSION_UUID
+    write_version(system, 1)
+    monkeypatch.setattr(shellext, "system_extension_dir", lambda: system)
+    monkeypatch.setattr(shellext.shutil, "which", lambda name: "/usr/bin/gnome-extensions")
+
+    class R:
+        returncode = 0
+        stdout = "  State: INITIALIZED\n  Enabled: No\n"
+
+    monkeypatch.setattr(shellext.subprocess, "run", lambda *a, **k: R())
+    # домашней копии нет, системная есть и выключена → «выключено», не «не установлено»
+    assert not shellext.extension_dir().exists()
+    assert shellext.state() != "не установлено"
+
+
+def test_user_extensions_disabled_reads_gsettings(monkeypatch):
+    """disable-user-extensions = true должно распознаваться — это и есть «пропал значок»."""
+    monkeypatch.setattr(shellext.shutil, "which", lambda name: "/usr/bin/gsettings")
+
+    def fake_run(cmd, *a, **k):
+        class R:
+            returncode = 0
+            stdout = "true\n"
+        return R()
+
+    monkeypatch.setattr(shellext.subprocess, "run", fake_run)
+    assert shellext.user_extensions_disabled() is True
+
+    monkeypatch.setattr(shellext.subprocess, "run",
+                        lambda *a, **k: type("R", (), {"returncode": 0, "stdout": "false\n"})())
+    assert shellext.user_extensions_disabled() is False
+
+
+def test_allow_user_extensions_clears_global_switch(monkeypatch):
+    """Демон снимает disable-user-extensions, иначе расширение не включить вовсе."""
+    monkeypatch.setattr(shellext, "user_extensions_disabled", lambda: True)
+    monkeypatch.setattr(shellext.shutil, "which", lambda name: "/usr/bin/gsettings")
+    calls = []
+
+    def fake_run(cmd, *a, **k):
+        calls.append(cmd)
+        return type("R", (), {"returncode": 0, "stdout": ""})()
+
+    monkeypatch.setattr(shellext.subprocess, "run", fake_run)
+    assert shellext.allow_user_extensions() is True
+    assert any("disable-user-extensions" in c and "false" in c for c in calls), \
+        "должны выставить disable-user-extensions false"
+
+    # уже разрешены — не трогаем
+    monkeypatch.setattr(shellext, "user_extensions_disabled", lambda: False)
+    assert shellext.allow_user_extensions() is False
